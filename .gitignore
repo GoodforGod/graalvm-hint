@@ -1,0 +1,17 @@
+# Package Files #
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+### Gradle template
+.gradle
+build/
+
+# Idea generatted files
+.idea
+/out/
+*.iml
+.settings/
