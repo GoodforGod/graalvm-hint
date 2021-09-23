@@ -1,4 +1,4 @@
-package io.library;
+package io.gradle.graalvm.typehint;
 
 /**
  * @author GoodforGod
