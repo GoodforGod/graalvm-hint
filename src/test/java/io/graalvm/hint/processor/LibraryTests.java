@@ -1,4 +1,4 @@
-package io.gradle.graalvm.typehint;
+package io.graalvm.hint.processor;
 
 /**
  * @author GoodforGod
