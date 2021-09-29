@@ -1,32 +1,19 @@
 package io.graalvm.hint.processor;
 
 import io.graalvm.hint.annotation.ResourceHint;
-import org.reflections.ReflectionUtils;
-import org.reflections.Reflections;
-import org.reflections.scanners.ResourcesScanner;
-import org.reflections.util.ClasspathHelper;
-import org.reflections.util.ConfigurationBuilder;
-
-import javax.annotation.processing.AbstractProcessor;
-import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
-import javax.annotation.processing.SupportedSourceVersion;
-import javax.lang.model.SourceVersion;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.PackageElement;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.ElementFilter;
-import javax.naming.Context;
-import javax.tools.FileObject;
-import javax.tools.JavaFileManager;
-import javax.tools.StandardLocation;
 import java.io.Writer;
-import java.net.URI;
-import java.net.URL;
-import java.util.Collection;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import javax.annotation.processing.*;
+import javax.lang.model.SourceVersion;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.ElementFilter;
+import javax.tools.Diagnostic;
+import javax.tools.FileObject;
+import javax.tools.StandardLocation;
 
 /**
  * Please Add Description Here.
@@ -37,7 +24,14 @@ import java.util.regex.Pattern;
  */
 @SupportedAnnotationTypes("io.graalvm.hint.annotation.ResourceHint")
 @SupportedSourceVersion(SourceVersion.RELEASE_11)
-public class ResourceHintProcessor extends AbstractProcessor {
+@SupportedOptions({
+        HintOptions.HINT_PROCESSING_GROUP,
+        HintOptions.HINT_PROCESSING_ARTIFACT
+})
+public class ResourceHintProcessor extends AbstractHintProcessor {
+
+    private static final String FILE_NAME = "resource-config.json";
+    private static final String PATTERN = "pattern";
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
@@ -45,38 +39,43 @@ public class ResourceHintProcessor extends AbstractProcessor {
             return false;
         }
 
-        Set<? extends Element> annotated = roundEnv.getElementsAnnotatedWith(ResourceHint.class);
-        Set<TypeElement> types = ElementFilter.typesIn(annotated);
+        Map<String, String> options = processingEnv.getOptions();
+        System.out.println("options: " + options);
+
+        final Set<? extends Element> annotated = roundEnv.getElementsAnnotatedWith(ResourceHint.class);
+        final Set<TypeElement> types = ElementFilter.typesIn(annotated);
+
+        final String resourceConfigJson = getResourceConfigJsonValue(types);
+
+        final HintOptions hintOptions = getHintOptions(roundEnv);
+        final String path = hintOptions.getRelativePathForFile(FILE_NAME);
+
         try {
-            TypeElement element = types.iterator().next();
-            PackageElement packageElem = (PackageElement) element.getEnclosingElement();
-            String s = packageElem.getQualifiedName().toString();
-            System.out.println(s);
-
-            Map<String, String> options = processingEnv.getOptions();
-            System.out.println("options: " + options);
-
-            FileObject fileObject = processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT,
-                    "resources/META-INF",
-                    "test-resource.json");
-
-            Writer writer = fileObject.openWriter();
-            writer.write("test");
-            writer.close();
-
-            ResourcesScanner scanner = new ResourcesScanner();
-            Collection<URL> urls = ClasspathHelper.forClassLoader(ResourceHintProcessor.class.getClassLoader());
-            System.out.println("URLs: " + urls);
-            Reflections reflections = new Reflections(new ConfigurationBuilder()
-                    .addScanners(scanner)
-                    .setUrls(urls)
-                    .addClassLoader(getClass().getClassLoader()));
-            Set<String> resources = reflections.getResources(Pattern.compile(".*"));
-            System.out.println("Resources: " + resources);
+            final FileObject fileObject = processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT, "", path);
+            try (Writer writer = fileObject.openWriter()) {
+                writer.write(resourceConfigJson);
+            }
         } catch (Exception e) {
-            e.printStackTrace();
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Couldn't write " + FILE_NAME + " due to: " + e.getMessage());
+            return false;
         }
-        System.out.println("--------------------- [ResourceHint] annotations: " + annotations + ", types: " + types);
-        return false;
+
+        processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "Successfully written " + FILE_NAME + " file to: " + path);
+        return true;
+    }
+
+    private static Map<String, String> mapToResource(String resourcePattern) {
+        return (resourcePattern.contains("*"))
+                ? Map.of(PATTERN, resourcePattern)
+                : Map.of(PATTERN, "\\\\Q" + resourcePattern + "\\\\E");
+    }
+
+    private static String getResourceConfigJsonValue(Set<TypeElement> types) {
+        return types.stream()
+                .flatMap(t -> Arrays.stream(t.getAnnotation(ResourceHint.class).patterns()))
+                .filter(r -> !r.isBlank() && !r.equals("."))
+                .map(ResourceHintProcessor::mapToResource)
+                .flatMap(r -> r.entrySet().stream().map(e -> "    { \"" + e.getKey() + "\" : \"" + e.getValue() + "\" }"))
+                .collect(Collectors.joining(",\n", "{\n  \"resources\": [\n", "\n  ]\n}"));
     }
 }
