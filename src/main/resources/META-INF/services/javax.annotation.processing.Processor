@@ -1,0 +1,2 @@
+io.graalvm.hint.processor.TypeHintProcessor
+io.graalvm.hint.processor.ResourceHintProcessor

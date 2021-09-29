@@ -13,10 +13,14 @@ import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 import javax.naming.Context;
+import javax.tools.FileObject;
 import javax.tools.JavaFileManager;
+import javax.tools.StandardLocation;
+import java.io.Writer;
 import java.net.URI;
 import java.net.URL;
 import java.util.Collection;
@@ -45,10 +49,20 @@ public class ResourceHintProcessor extends AbstractProcessor {
         Set<TypeElement> types = ElementFilter.typesIn(annotated);
         try {
             TypeElement element = types.iterator().next();
-            element.
+            PackageElement packageElem = (PackageElement) element.getEnclosingElement();
+            String s = packageElem.getQualifiedName().toString();
+            System.out.println(s);
 
             Map<String, String> options = processingEnv.getOptions();
             System.out.println("options: " + options);
+
+            FileObject fileObject = processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT,
+                    "resources/META-INF",
+                    "test-resource.json");
+
+            Writer writer = fileObject.openWriter();
+            writer.write("test");
+            writer.close();
 
             ResourcesScanner scanner = new ResourcesScanner();
             Collection<URL> urls = ClasspathHelper.forClassLoader(ResourceHintProcessor.class.getClassLoader());
