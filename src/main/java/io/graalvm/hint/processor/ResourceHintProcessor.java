@@ -39,8 +39,8 @@ public class ResourceHintProcessor extends AbstractHintProcessor {
             return false;
         }
 
-        Map<String, String> options = processingEnv.getOptions();
-        System.out.println("options: " + options);
+//        Map<String, String> options = processingEnv.getOptions();
+//        System.out.println("options: " + options);
 
         final Set<? extends Element> annotated = roundEnv.getElementsAnnotatedWith(ResourceHint.class);
         final Set<TypeElement> types = ElementFilter.typesIn(annotated);
