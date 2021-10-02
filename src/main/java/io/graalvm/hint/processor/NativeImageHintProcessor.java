@@ -3,7 +3,6 @@ package io.graalvm.hint.processor;
 import io.graalvm.hint.annotation.NativeImageHint;
 import java.io.Writer;
 import java.util.Arrays;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.processing.RoundEnvironment;
@@ -68,17 +67,9 @@ public class NativeImageHintProcessor extends AbstractHintProcessor {
 
     private String getNativeImageProperties(Set<TypeElement> types) {
         final TypeElement element = types.iterator().next();
-        final String nativeImageHintName = "NativeImageHint";
-        final String entryClassName = element.getAnnotationMirrors().stream()
-                .filter(a -> a.getAnnotationType().asElement().getSimpleName().contentEquals(nativeImageHintName))
-                .map(a -> a.getElementValues().entrySet().stream()
-                        .filter(e -> e.getKey().getSimpleName().contentEquals("entrypoint"))
-                        .map(e -> e.getValue().getValue().toString())
-                        .filter(e -> !e.endsWith(nativeImageHintName))
-                        .findFirst())
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .findFirst()
+
+        final String entryClassName = getAnnotationFieldClassNameAny(element, NativeImageHint.class.getSimpleName(), "entrypoint")
+                .filter(v -> !v.equals(NativeImageHint.class.getSimpleName())) // check that not default value
                 .orElseGet(() -> element.getQualifiedName().toString());
 
         final String separator = " \\\n       ";
