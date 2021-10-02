@@ -1,7 +1,6 @@
 package io.graalvm.hint.processor;
 
 import io.graalvm.hint.annotation.NativeImageHint;
-import java.io.Writer;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -14,8 +13,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic;
-import javax.tools.FileObject;
-import javax.tools.StandardLocation;
 
 /**
  * Please Add Description Here.
@@ -47,22 +44,8 @@ public class NativeImageHintProcessor extends AbstractHintProcessor {
             return false;
         }
 
-        final String resourceConfigJson = getNativeImageProperties(types);
-
-        final HintOptions hintOptions = getHintOptions(roundEnv);
-        final String path = hintOptions.getRelativePathForFile(FILE_NAME);
-        try {
-            final FileObject fileObject = processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT, "", path);
-            try (Writer writer = fileObject.openWriter()) {
-                writer.write(resourceConfigJson);
-            }
-        } catch (Exception e) {
-            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Couldn't write " + FILE_NAME + " due to: " + e.getMessage());
-            return false;
-        }
-
-        processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "Generated " + FILE_NAME + " file to: " + path);
-        return true;
+        final String nativeImageProperties = getNativeImageProperties(types);
+        return writeConfigFile(FILE_NAME, nativeImageProperties, roundEnv);
     }
 
     private String getNativeImageProperties(Set<TypeElement> types) {

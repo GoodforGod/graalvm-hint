@@ -1,5 +1,6 @@
 package io.graalvm.hint.processor;
 
+import java.io.Writer;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -10,6 +11,9 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
+import javax.tools.Diagnostic;
+import javax.tools.FileObject;
+import javax.tools.StandardLocation;
 
 /**
  * @author Anton Kurako (GoodforGod)
@@ -59,6 +63,25 @@ abstract class AbstractHintProcessor extends AbstractProcessor {
                         })
                         .filter(e -> !e.isBlank()))
                 .collect(Collectors.toList());
+    }
+
+    public boolean writeConfigFile(String fileName,
+                                   String data,
+                                   RoundEnvironment roundEnv) {
+        final HintOptions hintOptions = getHintOptions(roundEnv);
+        final String path = hintOptions.getRelativePathForFile(fileName);
+        try {
+            final FileObject fileObject = processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT, "", path);
+            try (Writer writer = fileObject.openWriter()) {
+                writer.write(data);
+            }
+        } catch (Exception e) {
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Couldn't write " + fileName + " due to: " + e.getMessage());
+            return false;
+        }
+
+        processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "Generated " + fileName + " file to: " + path);
+        return true;
     }
 
     private String getPackage(Element element) {
