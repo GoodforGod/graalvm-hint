@@ -57,8 +57,8 @@ abstract class AbstractHintProcessor extends AbstractProcessor {
                         .filter(e -> e.getKey().getSimpleName().contentEquals(annotationFieldName))
                         .flatMap(e -> {
                             final Object value = e.getValue().getValue();
-                            return (e instanceof List)
-                                    ? ((List<?>) e).stream().map(Object::toString)
+                            return (value instanceof List)
+                                    ? ((List<?>) value).stream().map(Object::toString)
                                     : Stream.of(value.toString());
                         })
                         .filter(e -> !e.isBlank()))
