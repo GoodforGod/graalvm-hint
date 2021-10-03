@@ -1,2 +1,3 @@
 io.graalvm.hint.processor.NativeImageHintProcessor
 io.graalvm.hint.processor.ResourceHintProcessor
+io.graalvm.hint.processor.TypeHintProcessor
