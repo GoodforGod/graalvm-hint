@@ -29,15 +29,13 @@ import javax.tools.Diagnostic;
 })
 public class TypeHintProcessor extends AbstractHintProcessor {
 
-    private static final String ALL_PUBLIC = "allPublic";
     private static final String ALL_PUBLIC_CONSTRUCTORS = "allPublicConstructors";
     private static final String ALL_PUBLIC_FIELDS = "allPublicFields";
     private static final String ALL_PUBLIC_METHODS = "allPublicMethods";
 
-    private static final String ALL_DECLARED = "allDeclared";
     private static final String ALL_DECLARED_CONSTRUCTORS = "allDeclaredConstructors";
     private static final String ALL_DECLARED_FIELDS = "allDeclaredFields";
-    private static final String ALL_DECLARED_METHODS = "allDeclaredFields";
+    private static final String ALL_DECLARED_METHODS = "allDeclaredMethods";
 
     private static final String FILE_NAME = "reflect-config.json";
 
@@ -105,37 +103,62 @@ public class TypeHintProcessor extends AbstractHintProcessor {
     private static Map<String, Object> getGraalReflectionForTypeName(String typeName,
                                                                      TypeHint.AccessType[] accessTypes) {
         final Map<String, Object> reflection = new LinkedHashMap<>(accessTypes.length + 3);
-        reflection.put(NAME, typeName);
+        final String typeFinalName = isTypeInnerClass(typeName)
+                ? getInnerTypeName(typeName)
+                : typeName;
 
+        reflection.put(NAME, typeFinalName);
         Arrays.stream(accessTypes)
+                .flatMap(t -> getGraalAccessType(t).stream())
+                .distinct()
                 .sorted()
-                .forEach(accessType -> {
-                    final String graalAccessType = getGraalAccessType(accessType);
-                    reflection.put(graalAccessType, true);
-                });
+                .forEach(graalAccessType -> reflection.put(graalAccessType, true));
 
         return reflection;
     }
 
-    private static String getGraalAccessType(TypeHint.AccessType accessType) {
+    private static boolean isTypeInnerClass(String typeName) {
+        return typeName.endsWith(".class");
+    }
+
+    private static String getInnerTypeName(String typeName) {
+        final List<String> classType = new ArrayList<>();
+
+        String packagePrefix = typeName.substring(0, typeName.length() - 6);
+        int nextSeparator;
+        while ((nextSeparator = packagePrefix.lastIndexOf('.')) != -1) {
+            final String nextClassType = packagePrefix.substring(nextSeparator + 1);
+            if (!Character.isUpperCase(nextClassType.charAt(0))) {
+                break;
+            }
+
+            classType.add(nextClassType);
+            packagePrefix = packagePrefix.substring(0, nextSeparator);
+        }
+
+        Collections.reverse(classType);
+        return classType.stream().sequential().collect(Collectors.joining("$", packagePrefix + ".", ""));
+    }
+
+    private static List<String> getGraalAccessType(TypeHint.AccessType accessType) {
         switch (accessType) {
             case ALL_PUBLIC:
-                return ALL_PUBLIC;
+                return List.of(ALL_PUBLIC_CONSTRUCTORS, ALL_PUBLIC_FIELDS, ALL_PUBLIC_METHODS);
             case ALL_PUBLIC_CONSTRUCTORS:
-                return ALL_PUBLIC_CONSTRUCTORS;
+                return List.of(ALL_PUBLIC_CONSTRUCTORS);
             case ALL_PUBLIC_FIELDS:
-                return ALL_PUBLIC_FIELDS;
+                return List.of(ALL_PUBLIC_FIELDS);
             case ALL_PUBLIC_METHODS:
-                return ALL_PUBLIC_METHODS;
+                return List.of(ALL_PUBLIC_METHODS);
 
             case ALL_DECLARED:
-                return ALL_DECLARED;
-            case ALL_DECLARED_FIELDS:
-                return ALL_DECLARED_FIELDS;
-            case ALL_DECLARED_METHODS:
-                return ALL_DECLARED_METHODS;
+                return List.of(ALL_DECLARED_CONSTRUCTORS, ALL_DECLARED_FIELDS, ALL_DECLARED_METHODS);
             case ALL_DECLARED_CONSTRUCTORS:
-                return ALL_DECLARED_CONSTRUCTORS;
+                return List.of(ALL_DECLARED_CONSTRUCTORS);
+            case ALL_DECLARED_FIELDS:
+                return List.of(ALL_DECLARED_FIELDS);
+            case ALL_DECLARED_METHODS:
+                return List.of(ALL_DECLARED_METHODS);
             default:
                 throw new IllegalStateException("Unknown AccessType is present: " + accessType);
         }
