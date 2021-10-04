@@ -1,6 +1,6 @@
-package io.graalvm.hint.processor;
+package io.goodforgod.graalvm.hint.processor;
 
-import io.graalvm.hint.annotation.TypeHint;
+import io.goodforgod.graalvm.hint.annotation.TypeHint;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -22,11 +22,11 @@ import javax.tools.Diagnostic;
  * @since 27.09.2021
  */
 @SupportedAnnotationTypes("io.graalvm.hint.annotation.TypeHint")
-@SupportedSourceVersion(SourceVersion.RELEASE_11)
 @SupportedOptions({
         HintOptions.HINT_PROCESSING_GROUP,
         HintOptions.HINT_PROCESSING_ARTIFACT
 })
+@SupportedSourceVersion(SourceVersion.RELEASE_11)
 public class TypeHintProcessor extends AbstractHintProcessor {
 
     private static final String ALL_PUBLIC_CONSTRUCTORS = "allPublicConstructors";
@@ -85,7 +85,7 @@ public class TypeHintProcessor extends AbstractHintProcessor {
         final TypeHint typeHint = element.getAnnotation(TypeHint.class);
         final TypeHint.AccessType[] accessTypes = typeHint.value();
 
-        final List<String> types = getAnnotationFieldClassNames(element, TypeHint.class.getSimpleName(), "types");
+        final List<String> types = getAnnotationFieldClassNames(element, TypeHint.class, "types");
         final List<String> typeNames = Arrays.asList(typeHint.typeNames());
 
         if (types.isEmpty() && typeNames.isEmpty()) {

@@ -1,4 +1,4 @@
-package io.graalvm.hint.processor;
+package io.goodforgod.graalvm.hint.processor;
 
 /**
  * @author GoodforGod

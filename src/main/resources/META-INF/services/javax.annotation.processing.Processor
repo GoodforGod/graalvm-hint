@@ -1,3 +1,3 @@
-io.graalvm.hint.processor.NativeImageHintProcessor
-io.graalvm.hint.processor.ResourceHintProcessor
-io.graalvm.hint.processor.TypeHintProcessor
+io.goodforgod.graalvm.hint.processor.NativeImageHintProcessor
+io.goodforgod.graalvm.hint.processor.ResourceHintProcessor
+io.goodforgod.graalvm.hint.processor.TypeHintProcessor

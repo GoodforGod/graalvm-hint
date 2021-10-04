@@ -1,6 +1,7 @@
-package io.graalvm.hint.processor;
+package io.goodforgod.graalvm.hint.processor;
 
 import java.io.Writer;
+import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -40,19 +41,20 @@ abstract class AbstractHintProcessor extends AbstractProcessor {
     }
 
     Optional<String> getAnnotationFieldClassNameAny(TypeElement type,
-                                                    String annotationSimpleName,
+                                                    Class<? extends Annotation> annotation,
                                                     String annotationFieldName) {
-        final List<String> classNames = getAnnotationFieldClassNames(type, annotationSimpleName, annotationFieldName);
+        final List<String> classNames = getAnnotationFieldClassNames(type, annotation, annotationFieldName);
         return classNames.isEmpty()
                 ? Optional.empty()
                 : Optional.of(classNames.get(0));
     }
 
     List<String> getAnnotationFieldClassNames(TypeElement type,
-                                              String annotationSimpleName,
+                                              Class<? extends Annotation> annotation,
                                               String annotationFieldName) {
+        final String annotationName = annotation.getSimpleName();
         return type.getAnnotationMirrors().stream()
-                .filter(a -> a.getAnnotationType().asElement().getSimpleName().contentEquals(annotationSimpleName))
+                .filter(a -> a.getAnnotationType().asElement().getSimpleName().contentEquals(annotationName))
                 .flatMap(a -> a.getElementValues().entrySet().stream()
                         .filter(e -> e.getKey().getSimpleName().contentEquals(annotationFieldName))
                         .flatMap(e -> {

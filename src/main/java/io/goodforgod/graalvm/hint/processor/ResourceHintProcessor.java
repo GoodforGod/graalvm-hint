@@ -1,6 +1,6 @@
-package io.graalvm.hint.processor;
+package io.goodforgod.graalvm.hint.processor;
 
-import io.graalvm.hint.annotation.ResourceHint;
+import io.goodforgod.graalvm.hint.annotation.ResourceHint;
 import java.util.*;
 import java.util.stream.Collectors;
 import javax.annotation.processing.*;
@@ -18,11 +18,11 @@ import javax.tools.Diagnostic;
  * @since 27.09.2021
  */
 @SupportedAnnotationTypes("io.graalvm.hint.annotation.ResourceHint")
-@SupportedSourceVersion(SourceVersion.RELEASE_11)
 @SupportedOptions({
         HintOptions.HINT_PROCESSING_GROUP,
         HintOptions.HINT_PROCESSING_ARTIFACT
 })
+@SupportedSourceVersion(SourceVersion.RELEASE_11)
 public class ResourceHintProcessor extends AbstractHintProcessor {
 
     private static final String FILE_NAME = "resource-config.json";
