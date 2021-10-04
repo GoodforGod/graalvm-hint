@@ -129,8 +129,6 @@ public class NativeImageHintProcessor extends AbstractHintProcessor {
                     final InitializationHint annotation = e.getAnnotation(InitializationHint.class);
                     final List<String> types = getAnnotationFieldClassNames(e, InitializationHint.class, "types");
                     final List<String> typeNames = Arrays.asList(annotation.typeNames());
-                    processingEnv.getMessager().printMessage(Diagnostic.Kind.MANDATORY_WARNING,
-                            "--- types " + types + ", names " + typeNames);
                     if (types.isEmpty() && typeNames.isEmpty()) {
                         return Stream.of(new Initialization(annotation.value(), e.getQualifiedName().toString()));
                     } else {
