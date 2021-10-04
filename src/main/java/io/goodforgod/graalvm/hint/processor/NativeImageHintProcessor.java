@@ -24,8 +24,8 @@ import javax.tools.Diagnostic;
  * @since 30.09.2021
  */
 @SupportedAnnotationTypes({
-        "io.graalvm.hint.annotation.NativeImageHint",
-        "io.graalvm.hint.annotation.InitializationHint"
+        "io.goodforgod.graalvm.hint.annotation.NativeImageHint",
+        "io.goodforgod.graalvm.hint.annotation.InitializationHint"
 })
 @SupportedOptions({
         HintOptions.HINT_PROCESSING_GROUP,

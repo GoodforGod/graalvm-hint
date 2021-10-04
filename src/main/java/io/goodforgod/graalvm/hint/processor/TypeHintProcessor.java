@@ -21,7 +21,7 @@ import javax.tools.Diagnostic;
  * @see TypeHint
  * @since 27.09.2021
  */
-@SupportedAnnotationTypes("io.graalvm.hint.annotation.TypeHint")
+@SupportedAnnotationTypes("io.goodforgod.graalvm.hint.annotation.TypeHint")
 @SupportedOptions({
         HintOptions.HINT_PROCESSING_GROUP,
         HintOptions.HINT_PROCESSING_ARTIFACT

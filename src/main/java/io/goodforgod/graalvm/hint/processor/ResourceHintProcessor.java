@@ -17,7 +17,7 @@ import javax.tools.Diagnostic;
  * @see ResourceHint
  * @since 27.09.2021
  */
-@SupportedAnnotationTypes("io.graalvm.hint.annotation.ResourceHint")
+@SupportedAnnotationTypes("io.goodforgod.graalvm.hint.annotation.ResourceHint")
 @SupportedOptions({
         HintOptions.HINT_PROCESSING_GROUP,
         HintOptions.HINT_PROCESSING_ARTIFACT
