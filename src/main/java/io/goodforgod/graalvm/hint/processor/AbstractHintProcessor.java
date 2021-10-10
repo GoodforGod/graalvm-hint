@@ -72,7 +72,6 @@ abstract class AbstractHintProcessor extends AbstractProcessor {
                 .collect(Collectors.toList());
     }
 
-    @SuppressWarnings("unchecked")
     List<String> getAnnotationFieldClassNames(TypeElement type,
                                               Class<? extends Annotation> annotation,
                                               String annotationFieldName,
@@ -84,15 +83,9 @@ abstract class AbstractHintProcessor extends AbstractProcessor {
                 .filter(a -> a.getAnnotationType().asElement().getSimpleName().contentEquals(annotationParent))
                 .flatMap(a -> a.getElementValues().entrySet().stream()
                         .filter(e -> e.getKey().getSimpleName().contentEquals("value"))
-                        .flatMap(e -> {
-                            final List<String> collect = (List<String>) ((List) e.getValue().getValue()).stream()
-                                    .flatMap(v -> ((AnnotationValue) v).accept(visitor, "").stream())
-                                    .collect(Collectors.toList());
-
-                            processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE,
-                                    "collected - " + collect);
-                            return collect.stream();
-                        })
+                        .flatMap(e -> ((List<?>) e.getValue().getValue()).stream()
+                                .flatMap(v -> ((AnnotationValue) v).accept(visitor, "").stream()))
+                        .map(Object::toString)
                         .filter(e -> !e.isBlank()))
                 .collect(Collectors.toList());
     }
