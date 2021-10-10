@@ -34,17 +34,22 @@ public class ResourceHintProcessor extends AbstractHintProcessor {
             return false;
         }
 
-        final Set<? extends Element> annotated = roundEnv.getElementsAnnotatedWith(ResourceHint.class);
-        final Set<TypeElement> types = ElementFilter.typesIn(annotated);
+        try {
+            final Set<? extends Element> annotated = roundEnv.getElementsAnnotatedWith(ResourceHint.class);
+            final Set<TypeElement> types = ElementFilter.typesIn(annotated);
 
-        final Optional<String> resourceConfigJson = getResourceConfigJsonValue(types);
-        if (resourceConfigJson.isEmpty()) {
-            processingEnv.getMessager().printMessage(Diagnostic.Kind.MANDATORY_WARNING,
-                    "@ResourceHint found, but patterns are not present");
+            final Optional<String> resourceConfigJson = getResourceConfigJsonValue(types);
+            if (resourceConfigJson.isEmpty()) {
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.MANDATORY_WARNING,
+                        "@ResourceHint found, but patterns are not present");
+                return false;
+            }
+
+            return writeConfigFile(FILE_NAME, resourceConfigJson.get(), roundEnv);
+        } catch (Exception e) {
+            e.printStackTrace();
             return false;
         }
-
-        return writeConfigFile(FILE_NAME, resourceConfigJson.get(), roundEnv);
     }
 
     private static Optional<String> getResourceConfigJsonValue(Set<TypeElement> types) {
@@ -57,6 +62,7 @@ public class ResourceHintProcessor extends AbstractHintProcessor {
             return Optional.empty();
 
         return Optional.of(resources.stream()
+                .sorted()
                 .map(ResourceHintProcessor::mapToResource)
                 .flatMap(r -> r.entrySet().stream().map(e -> String.format("    { \"%s\" : \"%s\" }", e.getKey(), e.getValue())))
                 .collect(Collectors.joining(",\n", "{\n  \"resources\": [\n", "\n  ]\n}")));

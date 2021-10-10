@@ -1,6 +1,7 @@
 package io.goodforgod.graalvm.hint.processor;
 
 import io.goodforgod.graalvm.hint.annotation.TypeHint;
+import io.goodforgod.graalvm.hint.annotation.TypeHints;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -9,9 +10,7 @@ import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedOptions;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic;
 
 /**
@@ -21,7 +20,10 @@ import javax.tools.Diagnostic;
  * @see TypeHint
  * @since 27.09.2021
  */
-@SupportedAnnotationTypes("io.goodforgod.graalvm.hint.annotation.TypeHint")
+@SupportedAnnotationTypes({
+        "io.goodforgod.graalvm.hint.annotation.TypeHint",
+        "io.goodforgod.graalvm.hint.annotation.TypeHints"
+})
 @SupportedOptions({
         HintOptions.HINT_PROCESSING_GROUP,
         HintOptions.HINT_PROCESSING_ARTIFACT
@@ -41,34 +43,71 @@ public class TypeHintProcessor extends AbstractHintProcessor {
 
     private static final String NAME = "name";
 
+    static class Reflection implements Comparable<Reflection> {
+
+        private final String targetName;
+        private final TypeHint.AccessType[] accessTypes;
+
+        Reflection(String targetName, TypeHint.AccessType[] accessTypes) {
+            this.targetName = targetName;
+            this.accessTypes = accessTypes;
+        }
+
+        @Override
+        public int compareTo(Reflection o) {
+            return targetName.compareTo(o.targetName);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o)
+                return true;
+            if (o == null || getClass() != o.getClass())
+                return false;
+            Reflection that = (Reflection) o;
+            return Objects.equals(targetName, that.targetName);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(targetName);
+        }
+    }
+
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         if (annotations.isEmpty()) {
             return false;
         }
 
-        final Set<? extends Element> annotated = roundEnv.getElementsAnnotatedWith(TypeHint.class);
-        final Set<TypeElement> types = ElementFilter.typesIn(annotated);
+        try {
+            final Set<TypeElement> types = getAnnotatedElements(roundEnv, TypeHint.class, TypeHints.class);
+            final List<Reflection> reflections = types.stream()
+                    .flatMap(element -> getGraalReflectionsForAnnotatedElement(element).stream())
+                    .distinct()
+                    .sorted()
+                    .collect(Collectors.toList());
 
-        final List<Map<String, Object>> reflections = types.stream()
-                .flatMap(element -> getGraalReflectionsForAnnotatedElement(element).stream())
-                .collect(Collectors.toList());
+            final Optional<String> reflectionConfigJson = getReflectionConfigJson(reflections);
+            if (reflectionConfigJson.isEmpty()) {
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.MANDATORY_WARNING,
+                        "@TypeHint found, but not reflection type hints parsed");
+                return false;
+            }
 
-        final Optional<String> reflectionConfigJson = getReflectionConfigJson(reflections);
-        if (reflectionConfigJson.isEmpty()) {
-            processingEnv.getMessager().printMessage(Diagnostic.Kind.MANDATORY_WARNING,
-                    "@TypeHint found, but not reflection type hints parsed");
+            return writeConfigFile(FILE_NAME, reflectionConfigJson.get(), roundEnv);
+        } catch (Exception e) {
+            e.printStackTrace();
             return false;
         }
-
-        return writeConfigFile(FILE_NAME, reflectionConfigJson.get(), roundEnv);
     }
 
-    private Optional<String> getReflectionConfigJson(List<Map<String, Object>> reflections) {
+    private Optional<String> getReflectionConfigJson(Collection<Reflection> reflections) {
         if (reflections.isEmpty())
             return Optional.empty();
 
         return Optional.of(reflections.stream()
+                .map(TypeHintProcessor::getGraalReflectionForTypeName)
                 .map(TypeHintProcessor::mapToJson)
                 .collect(Collectors.joining(",\n", "[", "]")));
     }
@@ -81,40 +120,49 @@ public class TypeHintProcessor extends AbstractHintProcessor {
                 .collect(Collectors.joining(",\n  ", "{\n  ", "\n}"));
     }
 
-    private List<Map<String, Object>> getGraalReflectionsForAnnotatedElement(TypeElement element) {
-        final TypeHint typeHint = element.getAnnotation(TypeHint.class);
-        final TypeHint.AccessType[] accessTypes = typeHint.value();
+    private Collection<Reflection> getGraalReflectionsForAnnotatedElement(TypeElement element) {
+        final TypeHints hints = element.getAnnotation(TypeHints.class);
+        if (hints == null) {
+            final TypeHint typeHint = element.getAnnotation(TypeHint.class);
+            return getGraalReflectionsForAnnotatedElement(element, typeHint, false);
+        } else {
+            return Arrays.stream(hints.value())
+                    .flatMap(h -> getGraalReflectionsForAnnotatedElement(element, h, true).stream())
+                    .collect(Collectors.toList());
+        }
+    }
 
-        final List<String> types = getAnnotationFieldClassNames(element, TypeHint.class, "types");
-        final List<String> typeNames = Arrays.asList(typeHint.typeNames());
+    private Collection<Reflection> getGraalReflectionsForAnnotatedElement(TypeElement element, TypeHint hint, boolean isParentAnnotation) {
+        final TypeHint.AccessType[] accessTypes = hint.value();
+        final List<String> types = (isParentAnnotation)
+                ? getAnnotationFieldClassNames(element, TypeHint.class, "types", TypeHints.class)
+                : getAnnotationFieldClassNames(element, TypeHint.class, "types");
+        final List<String> typeNames = Arrays.asList(hint.typeNames());
 
         if (types.isEmpty() && typeNames.isEmpty()) {
             final String selfName = element.getQualifiedName().toString();
-            final Map<String, Object> selfReflection = getGraalReflectionForTypeName(selfName, accessTypes);
-            return List.of(selfReflection);
+            return List.of(new Reflection(selfName, accessTypes));
         }
 
         return Stream.concat(types.stream(), typeNames.stream())
-                .distinct()
-                .map(t -> getGraalReflectionForTypeName(t, accessTypes))
+                .map(t -> new Reflection(t, accessTypes))
                 .collect(Collectors.toList());
     }
 
-    private static Map<String, Object> getGraalReflectionForTypeName(String typeName,
-                                                                     TypeHint.AccessType[] accessTypes) {
-        final Map<String, Object> reflection = new LinkedHashMap<>(accessTypes.length + 3);
-        final String typeFinalName = isTypeInnerClass(typeName)
-                ? getInnerTypeName(typeName)
-                : typeName;
+    private static Map<String, Object> getGraalReflectionForTypeName(Reflection reflection) {
+        final Map<String, Object> reflectionMap = new LinkedHashMap<>(reflection.accessTypes.length + 3);
+        final String typeFinalName = isTypeInnerClass(reflection.targetName)
+                ? getInnerTypeName(reflection.targetName)
+                : reflection.targetName;
 
-        reflection.put(NAME, typeFinalName);
-        Arrays.stream(accessTypes)
+        reflectionMap.put(NAME, typeFinalName);
+        Arrays.stream(reflection.accessTypes)
                 .flatMap(t -> getGraalAccessType(t).stream())
                 .distinct()
                 .sorted()
-                .forEach(graalAccessType -> reflection.put(graalAccessType, true));
+                .forEach(graalAccessType -> reflectionMap.put(graalAccessType, true));
 
-        return reflection;
+        return reflectionMap;
     }
 
     private static boolean isTypeInnerClass(String typeName) {
