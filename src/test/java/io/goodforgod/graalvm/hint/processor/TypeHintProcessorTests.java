@@ -5,7 +5,6 @@ import static com.google.testing.compile.Compiler.javac;
 
 import com.google.testing.compile.Compilation;
 import com.google.testing.compile.JavaFileObjects;
-
 import java.nio.charset.StandardCharsets;
 import javax.tools.StandardLocation;
 import org.junit.jupiter.api.Test;

@@ -11,7 +11,7 @@ import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic;
 
 /**
- * Please Add Description Here.
+ * Processes {@link ResourceHint} annotation for native-image resource-config.json file
  *
  * @author Anton Kurako (GoodforGod)
  * @see ResourceHint
@@ -53,24 +53,30 @@ public class ResourceHintProcessor extends AbstractHintProcessor {
     }
 
     private static Optional<String> getResourceConfigJsonValue(Set<TypeElement> types) {
-        final List<String> resources = types.stream()
-                .flatMap(t -> Arrays.stream(t.getAnnotation(ResourceHint.class).patterns()))
-                .filter(r -> !r.isBlank() && !r.equals("."))
-                .collect(Collectors.toList());
-
-        if (resources.isEmpty())
+        final Collection<String> resourcePatterns = getGraalVMResourcePattens(types);
+        if (resourcePatterns.isEmpty()) {
             return Optional.empty();
+        }
 
-        return Optional.of(resources.stream()
+        final String resourceConfig = resourcePatterns.stream()
+                .map(ResourceHintProcessor::mapPatternToGraalVM)
                 .sorted()
-                .map(ResourceHintProcessor::mapToResource)
-                .flatMap(r -> r.entrySet().stream().map(e -> String.format("    { \"%s\" : \"%s\" }", e.getKey(), e.getValue())))
-                .collect(Collectors.joining(",\n", "{\n  \"resources\": [\n", "\n  ]\n}")));
+                .map(resource -> Map.of(PATTERN, resource))
+                .flatMap(m -> m.entrySet().stream())
+                .map(r -> String.format("    { \"%s\" : \"%s\" }", r.getKey(), r.getValue()))
+                .collect(Collectors.joining(",\n", "{\n  \"resources\": [\n", "\n  ]\n}"));
+
+        return Optional.of(resourceConfig);
     }
 
-    private static Map<String, String> mapToResource(String resourcePattern) {
-        return (resourcePattern.contains("*"))
-                ? Map.of(PATTERN, resourcePattern)
-                : Map.of(PATTERN, "\\\\Q" + resourcePattern + "\\\\E");
+    private static Collection<String> getGraalVMResourcePattens(Set<TypeElement> types) {
+        return types.stream()
+                .flatMap(t -> Arrays.stream(t.getAnnotation(ResourceHint.class).patterns()))
+                .filter(r -> !r.isBlank())
+                .collect(Collectors.toSet());
+    }
+
+    private static String mapPatternToGraalVM(String pattern) {
+        return pattern;
     }
 }
