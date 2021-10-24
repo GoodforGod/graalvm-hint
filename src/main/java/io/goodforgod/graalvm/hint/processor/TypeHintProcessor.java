@@ -14,7 +14,7 @@ import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
 
 /**
- * Please Add Description Here.
+ * Processes {@link TypeHint} annotation for native-image reflect-config.json file
  *
  * @author Anton Kurako (GoodforGod)
  * @see TypeHint

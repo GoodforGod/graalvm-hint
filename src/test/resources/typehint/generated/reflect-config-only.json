@@ -1,0 +1,5 @@
+[{
+  "name": "io.goodforgod.graalvm.hint.processor.RequestOnly",
+  "allDeclaredConstructors": true,
+  "allDeclaredFields": true
+}]
