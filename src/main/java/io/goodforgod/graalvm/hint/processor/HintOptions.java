@@ -1,12 +1,10 @@
 package io.goodforgod.graalvm.hint.processor;
 
 /**
- *
- *
  * @author Anton Kurako (GoodforGod)
  * @since 29.09.2021
  */
-class HintOptions {
+final class HintOptions {
 
     public static final String HINT_PROCESSING_GROUP = "graalvm.hint.group";
     public static final String HINT_PROCESSING_ARTIFACT = "graalvm.hint.artifact";

@@ -132,7 +132,8 @@ public class TypeHintProcessor extends AbstractHintProcessor {
         }
     }
 
-    private Collection<Reflection> getGraalReflectionsForAnnotatedElement(TypeElement element, TypeHint hint, boolean isParentAnnotation) {
+    private Collection<Reflection>
+            getGraalReflectionsForAnnotatedElement(TypeElement element, TypeHint hint, boolean isParentAnnotation) {
         final TypeHint.AccessType[] accessTypes = hint.value();
         final List<String> types = (isParentAnnotation)
                 ? getAnnotationFieldClassNames(element, TypeHint.class, "types", TypeHints.class)

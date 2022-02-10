@@ -101,7 +101,8 @@ abstract class AbstractHintProcessor extends AbstractProcessor {
                 writer.write(data);
             }
         } catch (Exception e) {
-            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Couldn't write " + fileName + " due to: " + e.getMessage());
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR,
+                    "Couldn't write " + fileName + " due to: " + e.getMessage());
             return false;
         }
 

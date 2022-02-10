@@ -95,7 +95,8 @@ public class NativeImageHintProcessor extends AbstractHintProcessor {
             final Set<TypeElement> typesNative = ElementFilter.typesIn(annotatedNative);
             final List<String> nativeImageHintOptions = getNativeImageHintProperties(typesNative);
 
-            final Set<TypeElement> typesInits = getAnnotatedElements(roundEnv, InitializationHint.class, InitializationHints.class);
+            final Set<TypeElement> typesInits = getAnnotatedElements(roundEnv, InitializationHint.class,
+                    InitializationHints.class);
             final List<String> initializationHintOptions = getInitializationHintProperties(typesInits);
 
             final String nativeImageProperties = Stream.of(nativeImageHintOptions, initializationHintOptions)
@@ -147,7 +148,6 @@ public class NativeImageHintProcessor extends AbstractHintProcessor {
     }
 
     private List<String> getInitializationHintProperties(Set<TypeElement> elements) {
-
         final Map<InitializationHint.InitPhase, List<Initialization>> groupedInitializationOptions = elements.stream()
                 .flatMap(e -> {
                     final InitializationHints hints = e.getAnnotation(InitializationHints.class);
