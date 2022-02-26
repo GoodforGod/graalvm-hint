@@ -1,129 +1,80 @@
 plugins {
     id "jacoco"
-    id "maven-publish"
     id "java-library"
+    id "maven-publish"
 
     id "org.sonarqube" version "3.3"
-    id "com.diffplug.spotless" version "5.14.3"
+    id "com.diffplug.spotless" version "6.1.0"
 }
 
-repositories {
-    mavenLocal()
-    mavenCentral()
-    maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
-}
+subprojects {
+    apply plugin: "jacoco"
+    apply plugin: "java-library"
+    apply plugin: "maven-publish"
+    apply plugin: "org.sonarqube"
+    apply plugin: "com.diffplug.spotless"
 
-group = groupId
-version = artifactVersion
-
-sourceCompatibility = JavaVersion.VERSION_11
-targetCompatibility = JavaVersion.VERSION_11
-
-spotless {
-    java {
-        encoding("UTF-8")
-        importOrder()
-        removeUnusedImports()
-        eclipse().configFile("${projectDir}/config/codestyle.xml")
-    }
-}
-
-dependencies {
-    implementation "io.goodforgod:graalvm-hint-annotations:0.12.0-SNAPSHOT"
-
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.8.1"
-    testImplementation "org.junit.jupiter:junit-jupiter-api:5.8.1"
-    testImplementation "org.junit.jupiter:junit-jupiter-params:5.8.1"
-
-    testImplementation "com.google.testing.compile:compile-testing:0.19"
-}
-
-test {
-    useJUnitPlatform()
-    testLogging {
-        events("passed", "skipped", "failed")
-        exceptionFormat("full")
-    }
-
-    reports {
-        html.enabled(false)
-        junitXml.enabled(false)
-    }
-}
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
-
-            pom {
-                name = "GraalVM TypeHint Processor"
-                url = "https://github.com/GoodforGod/$artifactId"
-                description = "Description."
-
-                license {
-                    name = "Apache License 2.0"
-                    url = "https://github.com/GoodforGod/$artifactId/blob/master/LICENSE"
-                    distribution = "repo"
-                }
-
-                developer {
-                    id = "GoodforGod"
-                    name = "Anton Kurako"
-                    email = "goodforgod.dev@gmail.com"
-                    url = "https://github.com/GoodforGod"
-                }
-
-                scm {
-                    connection = "scm:git:git://github.com/GoodforGod/${artifactId}.git"
-                    developerConnection = "scm:git:ssh://GoodforGod/${artifactId}.git"
-                    url = "https://github.com/GoodforGod/$artifactId/tree/master"
-                }
-            }
-        }
-    }
     repositories {
-        maven {
-            def releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2"
-            def snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots/"
-            url = version.endsWith("SNAPSHOT") ? snapshotsRepoUrl : releasesRepoUrl
-            credentials {
-                username System.getenv("OSS_USERNAME")
-                password System.getenv("OSS_PASSWORD")
-            }
+        mavenLocal()
+        mavenCentral()
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
+    }
+
+    group = groupId
+    version = artifactVersion
+
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+
+    spotless {
+        java {
+            encoding("UTF-8")
+            importOrder()
+            removeUnusedImports()
+            eclipse("4.21.0").configFile("${rootDir}/config/codestyle.xml")
         }
     }
-}
 
-java {
-    withJavadocJar()
-    withSourcesJar()
-}
+    test {
+        useJUnitPlatform()
+        testLogging {
+            events("passed", "skipped", "failed")
+            exceptionFormat("full")
+        }
 
-tasks.withType(JavaCompile) {
-    options.encoding("UTF-8")
-    options.incremental(true)
-    options.fork = true
-}
-
-check.dependsOn jacocoTestReport
-jacocoTestReport {
-    reports {
-        xml.enabled true
-        html.destination file("${buildDir}/jacocoHtml")
+        reports {
+            html.enabled(false)
+            junitXml.enabled(false)
+        }
     }
-}
 
-javadoc {
-    options.encoding = "UTF-8"
-    if (JavaVersion.current().isJava9Compatible()) {
-        options.addBooleanOption("html5", true)
+    jar.enabled(true)
+
+    tasks.withType(JavaCompile) {
+        options.encoding("UTF-8")
+        options.incremental(true)
+        options.fork = true
     }
-}
 
-if (project.hasProperty("signing.keyId")) {
-    apply plugin: "signing"
-    signing {
-        sign publishing.publications.mavenJava
+    check.dependsOn jacocoTestReport
+    jacocoTestReport {
+        reports {
+            xml.enabled true
+            html.destination file("${buildDir}/jacocoHtml")
+        }
+    }
+
+    javadoc {
+        options.encoding = "UTF-8"
+        if (JavaVersion.current().isJava9Compatible()) {
+            options.addBooleanOption("html5", true)
+        }
+    }
+
+    if (project.hasProperty("signing.keyId")) {
+        apply plugin: "signing"
+        signing {
+            sign publishing.publications.mavenJava
+        }
     }
 }

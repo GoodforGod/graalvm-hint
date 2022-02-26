@@ -1,1 +1,5 @@
-rootProject.name = artifactId
+rootProject.name = "graalvm-hint"
+
+include "graalvm-hint-processor"
+include "graalvm-hint-annotations"
+

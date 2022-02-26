@@ -1,4 +1,4 @@
-# Package Files #
+### Package Files
 *.war
 *.nar
 *.ear
@@ -9,9 +9,10 @@
 ### Gradle template
 .gradle
 build/
+target/
 
-# Idea generatted files
+### Idea generated files
 .idea
-/out/
-*.iml
 .settings/
+*.iml
+out/
