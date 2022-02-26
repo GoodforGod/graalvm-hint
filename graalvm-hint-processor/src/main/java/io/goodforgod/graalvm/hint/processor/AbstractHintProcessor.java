@@ -90,7 +90,7 @@ abstract class AbstractHintProcessor extends AbstractProcessor {
                 .collect(Collectors.toList());
     }
 
-    public boolean writeConfigFile(String fileName,
+    boolean writeConfigFile(String fileName,
                                    String data,
                                    RoundEnvironment roundEnv) {
         final HintOptions hintOptions = getHintOptions(roundEnv);
