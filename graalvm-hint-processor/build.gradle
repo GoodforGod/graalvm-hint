@@ -1,12 +1,22 @@
+dependencies {
+    implementation project(":graalvm-hint-annotations")
+
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.8.2"
+    testImplementation "org.junit.jupiter:junit-jupiter-api:5.8.2"
+    testImplementation "org.junit.jupiter:junit-jupiter-params:5.8.2"
+
+    testImplementation "com.google.testing.compile:compile-testing:0.19"
+}
+
 publishing {
     publications {
         mavenJava(MavenPublication) {
             from components.java
 
             pom {
-                name = "GraalVM Hint Annotations"
+                name = "GraalVM Hint Processor"
                 url = "https://github.com/GoodforGod/$artifactId"
-                description = "GraalVM Hint Annotations helps marking GraalVM hints for Processor."
+                description = "GraalVM Hint Processor helps generating GraalVM hints."
 
                 license {
                     name = "Apache License 2.0"

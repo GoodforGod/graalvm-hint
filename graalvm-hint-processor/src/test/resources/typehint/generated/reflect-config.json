@@ -1,0 +1,18 @@
+[{
+  "name": "io.goodforgod.graalvm.hint.processor",
+  "allDeclaredConstructors": true,
+  "allDeclaredFields": true,
+  "allDeclaredMethods": true
+},
+{
+  "name": "io.goodforgod.graalvm.hint.processor.HintOptions",
+  "allDeclaredConstructors": true,
+  "allDeclaredFields": true,
+  "allDeclaredMethods": true
+},
+{
+  "name": "io.goodforgod.graalvm.hint.processor.RequestOnly",
+  "allDeclaredConstructors": true,
+  "allDeclaredFields": true,
+  "allDeclaredMethods": true
+}]
