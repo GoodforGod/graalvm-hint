@@ -16,7 +16,7 @@ publishing {
             pom {
                 name = "GraalVM Hint Processor"
                 url = "https://github.com/GoodforGod/$artifactId"
-                description = "GraalVM Hint Processor helps generating GraalVM hints."
+                description = "GraalVM Hint Processor helps generate GraalVM hints."
 
                 license {
                     name = "Apache License 2.0"
