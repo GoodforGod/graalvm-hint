@@ -22,7 +22,7 @@ import javax.tools.Diagnostic;
         HintOptions.HINT_PROCESSING_GROUP,
         HintOptions.HINT_PROCESSING_ARTIFACT
 })
-@SupportedSourceVersion(SourceVersion.RELEASE_11)
+@SupportedSourceVersion(SourceVersion.RELEASE_17)
 public final class ResourceHintProcessor extends AbstractHintProcessor {
 
     private static final String FILE_NAME = "resource-config.json";
