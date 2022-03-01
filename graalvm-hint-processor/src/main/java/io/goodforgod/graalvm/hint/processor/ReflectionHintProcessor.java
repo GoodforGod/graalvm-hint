@@ -1,10 +1,8 @@
 package io.goodforgod.graalvm.hint.processor;
 
-import static io.goodforgod.graalvm.hint.annotation.TypeHint.AccessType.*;
-
-import io.goodforgod.graalvm.hint.annotation.TypeHint;
-import io.goodforgod.graalvm.hint.annotation.TypeHint.AccessType;
-import io.goodforgod.graalvm.hint.annotation.TypeHints;
+import io.goodforgod.graalvm.hint.annotation.ReflectionHint;
+import io.goodforgod.graalvm.hint.annotation.ReflectionHint.AccessType;
+import io.goodforgod.graalvm.hint.annotation.ReflectionHints;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -17,22 +15,22 @@ import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
 
 /**
- * Processes {@link TypeHint} annotation for native-image reflect-config.json file
+ * Processes {@link ReflectionHint} annotation for native-image reflect-config.json file
  *
  * @author Anton Kurako (GoodforGod)
- * @see TypeHint
+ * @see ReflectionHint
  * @since 27.09.2021
  */
 @SupportedAnnotationTypes({
-        "io.goodforgod.graalvm.hint.annotation.TypeHint",
-        "io.goodforgod.graalvm.hint.annotation.TypeHints"
+        "io.goodforgod.graalvm.hint.annotation.ReflectionHint",
+        "io.goodforgod.graalvm.hint.annotation.ReflectionHints"
 })
 @SupportedOptions({
         HintOptions.HINT_PROCESSING_GROUP,
         HintOptions.HINT_PROCESSING_ARTIFACT
 })
-@SupportedSourceVersion(SourceVersion.RELEASE_17)
-public final class TypeHintProcessor extends AbstractHintProcessor {
+@SupportedSourceVersion(SourceVersion.RELEASE_11)
+public final class ReflectionHintProcessor extends AbstractHintProcessor {
 
     private static final String ALL_PUBLIC_CONSTRUCTORS = "allPublicConstructors";
     private static final String ALL_PUBLIC_FIELDS = "allPublicFields";
@@ -84,7 +82,7 @@ public final class TypeHintProcessor extends AbstractHintProcessor {
         }
 
         try {
-            final Set<TypeElement> types = getAnnotatedElements(roundEnv, TypeHint.class, TypeHints.class);
+            final Set<TypeElement> types = getAnnotatedElements(roundEnv, ReflectionHint.class, ReflectionHints.class);
             final List<Reflection> reflections = types.stream()
                     .flatMap(element -> getGraalReflectionsForAnnotatedElement(element).stream())
                     .distinct()
@@ -110,8 +108,8 @@ public final class TypeHintProcessor extends AbstractHintProcessor {
             return Optional.empty();
 
         return Optional.of(reflections.stream()
-                .map(TypeHintProcessor::getGraalReflectionForTypeName)
-                .map(TypeHintProcessor::mapToJson)
+                .map(ReflectionHintProcessor::getGraalReflectionForTypeName)
+                .map(ReflectionHintProcessor::mapToJson)
                 .collect(Collectors.joining(",\n", "[", "]")));
     }
 
@@ -124,10 +122,10 @@ public final class TypeHintProcessor extends AbstractHintProcessor {
     }
 
     private Collection<Reflection> getGraalReflectionsForAnnotatedElement(TypeElement element) {
-        final TypeHints hints = element.getAnnotation(TypeHints.class);
+        final ReflectionHints hints = element.getAnnotation(ReflectionHints.class);
         if (hints == null) {
-            final TypeHint typeHint = element.getAnnotation(TypeHint.class);
-            return getGraalReflectionsForAnnotatedElement(element, typeHint, false);
+            final ReflectionHint reflectionHint = element.getAnnotation(ReflectionHint.class);
+            return getGraalReflectionsForAnnotatedElement(element, reflectionHint, false);
         } else {
             return Arrays.stream(hints.value())
                     .flatMap(h -> getGraalReflectionsForAnnotatedElement(element, h, true).stream())
@@ -136,11 +134,11 @@ public final class TypeHintProcessor extends AbstractHintProcessor {
     }
 
     private Collection<Reflection>
-            getGraalReflectionsForAnnotatedElement(TypeElement element, TypeHint hint, boolean isParentAnnotation) {
+            getGraalReflectionsForAnnotatedElement(TypeElement element, ReflectionHint hint, boolean isParentAnnotation) {
         final AccessType[] accessTypes = hint.value();
         final List<String> types = (isParentAnnotation)
-                ? getAnnotationFieldClassNames(element, TypeHint.class, "types", TypeHints.class)
-                : getAnnotationFieldClassNames(element, TypeHint.class, "types");
+                ? getAnnotationFieldClassNames(element, ReflectionHint.class, "types", ReflectionHints.class)
+                : getAnnotationFieldClassNames(element, ReflectionHint.class, "types");
         final List<String> typeNames = Arrays.asList(hint.typeNames());
 
         if (types.isEmpty() && typeNames.isEmpty()) {

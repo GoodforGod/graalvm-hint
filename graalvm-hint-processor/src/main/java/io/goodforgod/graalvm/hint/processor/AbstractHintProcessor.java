@@ -91,8 +91,8 @@ abstract class AbstractHintProcessor extends AbstractProcessor {
     }
 
     boolean writeConfigFile(String fileName,
-                                   String data,
-                                   RoundEnvironment roundEnv) {
+                            String data,
+                            RoundEnvironment roundEnv) {
         final HintOptions hintOptions = getHintOptions(roundEnv);
         final String path = hintOptions.getRelativePathForFile(fileName);
         try {

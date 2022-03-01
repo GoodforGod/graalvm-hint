@@ -32,7 +32,7 @@ import javax.tools.Diagnostic;
         HintOptions.HINT_PROCESSING_GROUP,
         HintOptions.HINT_PROCESSING_ARTIFACT
 })
-@SupportedSourceVersion(SourceVersion.RELEASE_17)
+@SupportedSourceVersion(SourceVersion.RELEASE_11)
 public final class NativeImageHintProcessor extends AbstractHintProcessor {
 
     private static final String ENTRY_POINT_DEFAULT_VALUE = Void.class.getSimpleName();

@@ -3,22 +3,23 @@ package io.goodforgod.graalvm.hint.annotation;
 import java.lang.annotation.*;
 
 /**
- * The type hint annotation is a GraalVM annotation that is used on interfaces to provide additional
- * information about types used at runtime.
+ * The reflection hint annotation is a GraalVM annotation that is used on interfaces to provide
+ * additional
+ * information about types used at runtime for reflection access.
  *
  * @see <a href="https://www.graalvm.org/reference-manual/native-image/Reflection/">GraalVM Info</a>
  * @author Anton Kurako (GoodforGod)
  * @since 26.09.2021
  */
-@Repeatable(TypeHints.class)
+@Repeatable(ReflectionHints.class)
 @Target({ ElementType.ANNOTATION_TYPE, ElementType.TYPE })
 @Retention(RetentionPolicy.SOURCE)
-public @interface TypeHint {
+public @interface ReflectionHint {
 
     /**
-     * Describes the access for types.
+     * Describes the reflection access for types.
      *
-     * @return The access type
+     * @return The reflection access type
      */
     AccessType[] value() default { AccessType.ALL_DECLARED };
 
@@ -37,7 +38,7 @@ public @interface TypeHint {
     String[] typeNames() default {};
 
     /**
-     * The access type.
+     * The reflection access type.
      */
     enum AccessType {
 
@@ -79,6 +80,6 @@ public @interface TypeHint {
         /**
          * All declared fields require access.
          */
-        ALL_DECLARED_FIELDS,
+        ALL_DECLARED_FIELDS
     }
 }

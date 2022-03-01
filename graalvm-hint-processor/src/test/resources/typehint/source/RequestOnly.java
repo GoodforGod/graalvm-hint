@@ -1,8 +1,8 @@
 package io.goodforgod.graalvm.hint.processor;
 
-import io.goodforgod.graalvm.hint.annotation.TypeHint;
+import io.goodforgod.graalvm.hint.annotation.ReflectionHint;
 
-@TypeHint
+@ReflectionHint
 public class RequestOnly {
 
     private String name;

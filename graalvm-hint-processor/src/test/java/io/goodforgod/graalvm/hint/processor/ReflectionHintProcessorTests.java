@@ -12,12 +12,12 @@ import org.junit.jupiter.api.Test;
  * @author GoodforGod
  * @since 13.11.2019
  */
-class TypeHintProcessorTests extends ProcessorRunner {
+class ReflectionHintProcessorTests extends ProcessorRunner {
 
     @Test
     void typeHintForSelfClassSuccess() {
         final Compilation compilation = Compiler.javac()
-                .withProcessors(new TypeHintProcessor())
+                .withProcessors(new ReflectionHintProcessor())
                 .compile(JavaFileObjects.forResource("typehint/source/RequestOnly.java"));
 
         CompilationSubject.assertThat(compilation).succeeded();
@@ -31,7 +31,7 @@ class TypeHintProcessorTests extends ProcessorRunner {
     @Test
     void typeHintForMultipleClassesAndMultipleAnnotationsSuccess() {
         final Compilation compilation = Compiler.javac()
-                .withProcessors(new TypeHintProcessor())
+                .withProcessors(new ReflectionHintProcessor())
                 .compile(JavaFileObjects.forResource("typehint/source/RequestOnly.java"),
                         JavaFileObjects.forResource("typehint/source/Response.java"));
 

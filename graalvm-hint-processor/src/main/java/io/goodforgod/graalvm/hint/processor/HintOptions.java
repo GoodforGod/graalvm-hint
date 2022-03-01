@@ -26,14 +26,6 @@ final class HintOptions {
         this.artifact = artifact;
     }
 
-    public String getGroup() {
-        return group;
-    }
-
-    public String getArtifact() {
-        return artifact;
-    }
-
     public String getRelativePathForFile(String fileName) {
         return "META-INF/native-image/" + group + "/" + artifact + "/" + fileName;
     }
