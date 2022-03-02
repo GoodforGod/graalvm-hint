@@ -42,4 +42,18 @@ class ReflectionHintProcessorTests extends ProcessorRunner {
                 .contentsAsString(StandardCharsets.UTF_8)
                 .isEqualTo(getResourceContentAsString("typehint/generated/reflect-config.json"));
     }
+
+    @Test
+    void typeHintForMultipleAccessHintsSuccess() {
+        final Compilation compilation = Compiler.javac()
+                .withProcessors(new ReflectionHintProcessor())
+                .compile(JavaFileObjects.forResource("typehint/source/RequestOnlyManyAccess.java"));
+
+        CompilationSubject.assertThat(compilation).succeeded();
+        CompilationSubject.assertThat(compilation)
+                .generatedFile(StandardLocation.CLASS_OUTPUT,
+                        "META-INF/native-image/io.goodforgod.graalvm.hint/processor/reflect-config.json")
+                .contentsAsString(StandardCharsets.UTF_8)
+                .isEqualTo(getResourceContentAsString("typehint/generated/reflect-config-only-many-access.json"));
+    }
 }
