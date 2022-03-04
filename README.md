@@ -1,10 +1,10 @@
 # GraalVM Hint Processor
 
 ![GraalVM Enabled](https://img.shields.io/badge/GraalVM-Ready-orange?style=plastic)
-[![GitHub Action](https://github.com/goodforgod/slf4j-simple-logger/workflows/Java%20CI/badge.svg)](https://github.com/GoodforGod/slf4j-simple-logger/actions?query=workflow%3A%22Java+CI%22)
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=GoodforGod_slf4j-simple-logger&metric=coverage)](https://sonarcloud.io/dashboard?id=GoodforGod_slf4j-simple-logger)
-[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=GoodforGod_slf4j-simple-logger&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=GoodforGod_slf4j-simple-logger)
-[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=GoodforGod_slf4j-simple-logger&metric=ncloc)](https://sonarcloud.io/dashboard?id=GoodforGod_slf4j-simple-logger)
+[![GitHub Action](https://github.com/goodforgod/graalvm-hint-processor/workflows/Java%20CI/badge.svg)](https://github.com/GoodforGod/graalvm-hint-processor/actions?query=workflow%3A%22Java+CI%22)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=GoodforGod_graalvm-hint-processor&metric=coverage)](https://sonarcloud.io/dashboard?id=GoodforGod_graalvm-hint-processor)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=GoodforGod_graalvm-hint-processor&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=GoodforGod_graalvm-hint-processor)
+[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=GoodforGod_graalvm-hint-processor&metric=ncloc)](https://sonarcloud.io/dashboard?id=GoodforGod_graalvm-hint-processor)
 
 GraalVM Hint Processor helps generate GraalVM hints for building [native-image](https://www.graalvm.org/reference-manual/native-image/) applications.
 
@@ -18,8 +18,8 @@ Features:
 
 [**Gradle**](https://mvnrepository.com/artifact/io.goodforgod/io.graalvm-hint-processor)
 ```groovy
-annotationProcessor "io.graalvm-hint-processor:0.11.0"
-compilyOnly "io.graalvm-hint-annotations:0.11.0"
+annotationProcessor "io.graalvm-hint-processor:0.14.0"
+compilyOnly "io.graalvm-hint-annotations:0.14.0"
 ```
 
 [**Maven**](https://mvnrepository.com/artifact/io.goodforgod/io.graalvm-hint-processor)
@@ -27,7 +27,7 @@ compilyOnly "io.graalvm-hint-annotations:0.11.0"
 <dependency>
     <groupId>io.goodforgod</groupId>
     <artifactId>graalvm-hint-annotations</artifactId>
-    <version>0.11.0</version>
+    <version>0.14.0</version>
     <scope>compile</scope>
     <optional>true</optional>
 </dependency>
@@ -45,7 +45,7 @@ compilyOnly "io.graalvm-hint-annotations:0.11.0"
                     <annotationProcessorPath>
                         <groupId>io.goodforgod</groupId>
                         <artifactId>graalvm-hint-processor</artifactId>
-                        <version>0.11.0</version>
+                        <version>0.14.0</version>
                     </annotationProcessorPath>
                 </annotationProcessorPaths>
             </configuration>
@@ -56,7 +56,70 @@ compilyOnly "io.graalvm-hint-annotations:0.11.0"
 
 ## Examples
 
-### TypeHint
+Below are illustrated examples for usage of such library.
+
+### ReflectionHint
+
+You can read more about GraalVM reflection configuration [here](https://www.graalvm.org/reference-manual/native-image/Reflection/).
+
+There are available access hints:
+- allPublicFields
+- allPublicMethods
+- allPublicConstructors
+- allDeclaredFields
+- allDeclaredMethods
+- allDeclaredConstructors
+
+Generating reflection access, most used cases is DTOs that are used for serialization/deserialization in any format (JSON for example).
+
+Simple case for single Java class:
+```java
+@ReflectionHint
+public class RequestOnly {
+
+    private String name;
+}
+```
+
+Generated reflection config:
+```json
+[{
+  "name": "io.goodforgod.graalvm.hint.processor.RequestOnly",
+  "allDeclaredConstructors": true,
+  "allDeclaredFields": true,
+  "allDeclaredMethods": true
+}]
+```
+
+There may be more different cases, like generating hints for classes that are package private or just private, also there hint can be used for whole package.
+
+Complex example generating reflection access:
+```java
+@ReflectionHint(types = { Response.class, Request.class }, value = ReflectionHint.AccessType.ALL_DECLARED_FIELDS)
+@ReflectionHint(typeNames = { "io.goodforgod.graalvm.hint.processor"})
+public class ReflectionConfig {
+
+    private String name;
+}
+```
+
+Resulted reflection-config.json:
+```json
+[{
+  "name": "io.goodforgod.graalvm.hint.processor",
+  "allDeclaredConstructors": true,
+  "allDeclaredFields": true,
+  "allDeclaredMethods": true
+},
+{
+  "name": "io.goodforgod.example.Response",
+  "allDeclaredFields": true
+},
+{
+  "name": "io.goodforgod.example.Request",
+  "allDeclaredFields": true
+}]
+```
 
 ### ResourceHint
 
