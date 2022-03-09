@@ -123,9 +123,103 @@ Resulted reflection-config.json:
 
 ### ResourceHint
 
+You can read more about GraalVM resource configuration [here](https://www.graalvm.org/reference-manual/native-image/Resources/).
+
+Hint allows generating config for resource files to include into native application.
+
+Hint configuration:
+```java
+@ResourceHint(patterns = { "simplelogger.properties", "application.yml", "*.xml" })
+public class ResourceNames {
+
+}
+```
+
+Resulted resource-config.json:
+```json
+{
+  "resources": [
+    { "pattern" : "*.xml" },
+    { "pattern" : "application.yml" },
+    { "pattern" : "simplelogger.properties" }
+  ]
+}
+```
+
 ### NativeImageHint
 
+You can read more about GraalVM native-image options [here](https://www.graalvm.org/reference-manual/native-image/Options/).
+
+Hint allows generating config for native-image options and initial application entrypoint.
+
+Simple hint configuration:
+```java
+@NativeImageHint(entrypoint = EntrypointOnly.class)
+public class EntrypointOnly {
+
+    public static void main(String[] args) {}
+}
+```
+
+Resulted native-image.properties:
+```properties
+Args = -H:Name=application -H:Class=io.goodforgod.graalvm.hint.processor.EntrypointOnly
+```
+
+Complex hint configuration with options:
+```java
+@NativeImageHint(entrypoint = Entrypoint.class, name = "myapp", options = { NativeImageOptions.PRINT_INITIALIZATION, NativeImageOptions.INLINE_BEFORE_ANALYSIS })
+public class Entrypoint {
+
+    public static void main(String[] args) {}
+}
+```
+
+Resulted native-image.properties:
+```properties
+Args = -H:Name=myapp -H:Class=io.goodforgod.graalvm.hint.processor.Entrypoint \
+       -H:+PrintClassInitialization \
+       -H:+InlineBeforeAnalysis
+```
+
 ### InitializationHint
+
+You can read more about GraalVM initialization configuration [here](https://www.graalvm.org/reference-manual/native-image/ClassInitialization/).
+
+Hint allows generating config for what classes to instantiate in runtime and what classes to instantiate in compile time.
+
+Initialization hint configuration:
+```java
+@InitializationHint(value = InitializationHint.InitPhase.BUILD, types = HintOptions.class)
+@InitializationHint(value = InitializationHint.InitPhase.RUNTIME, typeNames = "io.goodforgod.graalvm.hint.processor")
+public class EntrypointOnly {
+
+}
+```
+
+Resulted native-image.properties:
+```properties
+Args = --initialize-at-build-time=io.goodforgod.graalvm.hint.processor.HintOptions.class \
+       --initialize-at-run-time=io.goodforgod.graalvm.hint.processor
+```
+
+Options and initialization hint configuration:
+```java
+@NativeImageHint(entrypoint = Entrypoint.class)
+@InitializationHint(value = InitializationHint.InitPhase.BUILD, types = HintOptions.class)
+@InitializationHint(value = InitializationHint.InitPhase.RUNTIME, typeNames = "io.goodforgod.graalvm.hint.processor")
+public class Entrypoint {
+
+    public static void main(String[] args) {}
+}
+```
+
+Resulted native-image.properties:
+```properties
+Args = -H:Name=application -H:Class=io.goodforgod.graalvm.hint.processor.Entrypoint \
+       --initialize-at-build-time=io.goodforgod.graalvm.hint.processor.HintOptions.class \
+       --initialize-at-run-time=io.goodforgod.graalvm.hint.processor
+```
 
 ## License
 
