@@ -52,11 +52,6 @@ public final class NativeImageHintProcessor extends AbstractHintProcessor {
             this.className = className;
             this.hint = hint;
         }
-
-        @Override
-        public String toString() {
-            return className;
-        }
     }
 
     static class Initialization implements Comparable<Initialization> {
