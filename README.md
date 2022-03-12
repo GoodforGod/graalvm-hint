@@ -16,25 +16,35 @@ Features:
 
 ## Dependency :rocket:
 
+Java 11+ is supported.
+
 [**Gradle**](https://mvnrepository.com/artifact/io.goodforgod/io.graalvm-hint-processor)
 ```groovy
-annotationProcessor "io.graalvm-hint-processor:0.14.0"
-compilyOnly "io.graalvm-hint-annotations:0.14.0"
+annotationProcessor "io.graalvm-hint-processor:0.15.0"
+compilyOnly "io.graalvm-hint-annotations:0.15.0"
 ```
 
 [**Maven**](https://mvnrepository.com/artifact/io.goodforgod/io.graalvm-hint-processor)
 ```xml
 <dependency>
-    <groupId>io.goodforgod</groupId>
-    <artifactId>graalvm-hint-annotations</artifactId>
-    <version>0.14.0</version>
-    <scope>compile</scope>
-    <optional>true</optional>
-</dependency>
+    <dependency>
+        <groupId>io.goodforgod</groupId>
+        <artifactId>graalvm-hint-annotations</artifactId>
+        <version>0.15.0</version>
+        <scope>compile</scope>
+        <optional>true</optional>
+    </dependency>
+    <dependency>
+        <groupId>io.goodforgod</groupId>
+        <artifactId>graalvm-hint-processor</artifactId>
+        <version>0.15.0</version>
+        <scope>provided</scope>
+    </dependency>
+</dependencies>
 ```
 
 ```xml
-<pluginManagement>
+<build>
     <plugins>
         <plugin>
             <groupId>org.apache.maven.plugins</groupId>
@@ -42,16 +52,16 @@ compilyOnly "io.graalvm-hint-annotations:0.14.0"
             <version>3.10.0</version>
             <configuration>
                 <annotationProcessorPaths>
-                    <annotationProcessorPath>
+                    <path>
                         <groupId>io.goodforgod</groupId>
                         <artifactId>graalvm-hint-processor</artifactId>
-                        <version>0.14.0</version>
-                    </annotationProcessorPath>
+                        <version>0.15.0</version>
+                    </path>
                 </annotationProcessorPaths>
             </configuration>
         </plugin>
     </plugins>
-</pluginManagement>
+</build>
 ```
 
 ## Examples
