@@ -29,6 +29,20 @@ class ReflectionHintProcessorTests extends ProcessorRunner {
     }
 
     @Test
+    void reflectionHintForMultipleAnnotationsSuccess() {
+        final Compilation compilation = Compiler.javac()
+                .withProcessors(new ReflectionHintProcessor())
+                .compile(JavaFileObjects.forResource("reflectionhint/source/Response.java"));
+
+        CompilationSubject.assertThat(compilation).succeeded();
+        CompilationSubject.assertThat(compilation)
+                .generatedFile(StandardLocation.CLASS_OUTPUT,
+                        "META-INF/native-image/io.goodforgod.graalvm.hint/processor/reflect-config.json")
+                .contentsAsString(StandardCharsets.UTF_8)
+                .isEqualTo(getResourceContentAsString("reflectionhint/generated/reflect-config.json"));
+    }
+
+    @Test
     void reflectionHintForMultipleClassesAndMultipleAnnotationsSuccess() {
         final Compilation compilation = Compiler.javac()
                 .withProcessors(new ReflectionHintProcessor())
@@ -40,7 +54,7 @@ class ReflectionHintProcessorTests extends ProcessorRunner {
                 .generatedFile(StandardLocation.CLASS_OUTPUT,
                         "META-INF/native-image/io.goodforgod.graalvm.hint/processor/reflect-config.json")
                 .contentsAsString(StandardCharsets.UTF_8)
-                .isEqualTo(getResourceContentAsString("reflectionhint/generated/reflect-config.json"));
+                .isEqualTo(getResourceContentAsString("reflectionhint/generated/reflect-config-many.json"));
     }
 
     @Test
