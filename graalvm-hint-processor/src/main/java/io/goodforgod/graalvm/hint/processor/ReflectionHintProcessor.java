@@ -9,8 +9,7 @@ import java.util.stream.Stream;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedOptions;
-import javax.annotation.processing.SupportedSourceVersion;
-import javax.lang.model.SourceVersion;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
 
@@ -29,7 +28,6 @@ import javax.tools.Diagnostic;
         HintOptions.HINT_PROCESSING_GROUP,
         HintOptions.HINT_PROCESSING_ARTIFACT
 })
-@SupportedSourceVersion(SourceVersion.RELEASE_11)
 public final class ReflectionHintProcessor extends AbstractHintProcessor {
 
     private static final String ALL_PUBLIC_CONSTRUCTORS = "allPublicConstructors";
@@ -92,7 +90,7 @@ public final class ReflectionHintProcessor extends AbstractHintProcessor {
             final Optional<String> reflectionConfigJson = getReflectionConfigJson(reflections);
             if (reflectionConfigJson.isEmpty()) {
                 processingEnv.getMessager().printMessage(Diagnostic.Kind.MANDATORY_WARNING,
-                        "@TypeHint found, but not reflection type hints parsed");
+                        "@ReflectionHint annotation found, but not reflection type hints parsed");
                 return false;
             }
 
@@ -128,18 +126,33 @@ public final class ReflectionHintProcessor extends AbstractHintProcessor {
             return getGraalReflectionsForAnnotatedElement(element, reflectionHint, false);
         } else {
             return Arrays.stream(hints.value())
-                    .flatMap(h -> getGraalReflectionsForAnnotatedElement(element, h, true).stream())
+                    .flatMap(hint -> getGraalReflectionsForAnnotatedElement(element, hint, true).stream())
                     .collect(Collectors.toList());
         }
     }
 
-    private Collection<Reflection>
-            getGraalReflectionsForAnnotatedElement(TypeElement element, ReflectionHint hint, boolean isParentAnnotation) {
+    private Collection<Reflection> getGraalReflectionsForAnnotatedElement(TypeElement element,
+                                                                          ReflectionHint hint,
+                                                                          boolean isParentAnnotation) {
         final AccessType[] accessTypes = hint.value();
-        final List<String> types = (isParentAnnotation)
-                ? getAnnotationFieldClassNames(element, ReflectionHint.class, "types", ReflectionHints.class)
-                : getAnnotationFieldClassNames(element, ReflectionHint.class, "types");
         final List<String> typeNames = Arrays.asList(hint.typeNames());
+        final List<String> types = (!isParentAnnotation)
+                ? getAnnotationFieldClassNames(element, ReflectionHint.class, "types")
+                : getAnnotationFieldClassNames(element, ReflectionHint.class, "types", ReflectionHints.class,
+                        a -> ((AnnotationMirror) a).getElementValues().entrySet().stream()
+                                .filter(e -> e.getKey().getSimpleName().contentEquals("value"))
+                                .anyMatch(e -> {
+                                    final Object value = e.getValue().getValue();
+                                    final List<String> accessTypesReflection = (value instanceof Collection)
+                                            ? ((Collection<?>) value).stream().map(Object::toString).collect(Collectors.toList())
+                                            : List.of(value.toString());
+
+                                    final List<String> accessTypeNames = Arrays.stream(accessTypes)
+                                            .map(Enum::name)
+                                            .collect(Collectors.toList());
+
+                                    return accessTypesReflection.equals(accessTypeNames);
+                                }));
 
         if (types.isEmpty() && typeNames.isEmpty()) {
             final String selfName = element.getQualifiedName().toString();

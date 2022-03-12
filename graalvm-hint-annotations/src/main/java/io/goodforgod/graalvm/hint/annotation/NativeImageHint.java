@@ -32,7 +32,8 @@ public @interface NativeImageHint {
 
     /**
      * @see #options()
-     * @return additional options to include for configuring native-image as string for some non-standard options
+     * @return additional options to include for configuring native-image as string for some
+     *             non-standard options
      */
     String[] optionNames() default {};
 }

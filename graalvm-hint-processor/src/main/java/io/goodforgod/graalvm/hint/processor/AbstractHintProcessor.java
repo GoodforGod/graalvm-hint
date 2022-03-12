@@ -3,10 +3,12 @@ package io.goodforgod.graalvm.hint.processor;
 import java.io.Writer;
 import java.lang.annotation.Annotation;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.RoundEnvironment;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.PackageElement;
@@ -24,6 +26,20 @@ abstract class AbstractHintProcessor extends AbstractProcessor {
 
     private static final String DEFAULT_GROUP = "io.graalvm.hint";
     private static final String DEFAULT_ARTIFACT = "application";
+
+    @Override
+    public SourceVersion getSupportedSourceVersion() {
+        SourceVersion sourceVersion = SourceVersion.latest();
+        if (sourceVersion.ordinal() <= 17) {
+            if (sourceVersion.ordinal() >= 11) {
+                return sourceVersion;
+            } else {
+                return SourceVersion.RELEASE_11;
+            }
+        } else {
+            return (SourceVersion.values())[17];
+        }
+    }
 
     HintOptions getHintOptions(RoundEnvironment roundEnv) {
         final Map<String, String> options = processingEnv.getOptions();
@@ -76,6 +92,14 @@ abstract class AbstractHintProcessor extends AbstractProcessor {
                                               Class<? extends Annotation> annotation,
                                               String annotationFieldName,
                                               Class<? extends Annotation> parentAnnotation) {
+        return getAnnotationFieldClassNames(type, annotation, annotationFieldName, parentAnnotation, a -> true);
+    }
+
+    List<String> getAnnotationFieldClassNames(TypeElement type,
+                                              Class<? extends Annotation> annotation,
+                                              String annotationFieldName,
+                                              Class<? extends Annotation> parentAnnotation,
+                                              Predicate<AnnotationValue> annotationPredicate) {
         final String annotationName = annotation.getSimpleName();
         final String annotationParent = parentAnnotation.getSimpleName();
         final AnnotationTypeFieldVisitor visitor = new AnnotationTypeFieldVisitor(annotationName, annotationFieldName);
@@ -84,7 +108,8 @@ abstract class AbstractHintProcessor extends AbstractProcessor {
                 .flatMap(a -> a.getElementValues().entrySet().stream()
                         .filter(e -> e.getKey().getSimpleName().contentEquals("value"))
                         .flatMap(e -> ((List<?>) e.getValue().getValue()).stream()
-                                .flatMap(v -> ((AnnotationValue) v).accept(visitor, "").stream()))
+                                .filter(an -> annotationPredicate.test(((AnnotationValue) an)))
+                                .flatMap(an -> ((AnnotationValue) an).accept(visitor, "").stream()))
                         .map(Object::toString)
                         .filter(e -> !e.isBlank()))
                 .collect(Collectors.toList());

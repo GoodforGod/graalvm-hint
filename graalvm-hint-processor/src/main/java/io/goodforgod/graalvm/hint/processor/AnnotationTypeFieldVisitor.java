@@ -1,5 +1,6 @@
 package io.goodforgod.graalvm.hint.processor;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -91,8 +92,8 @@ final class AnnotationTypeFieldVisitor implements AnnotationValueVisitor<List<St
                     .filter(e -> e.getKey().getSimpleName().contentEquals(annotationFieldName))
                     .flatMap(e -> {
                         final Object value = e.getValue().getValue();
-                        return (value instanceof List)
-                                ? ((List<?>) value).stream().map(Object::toString)
+                        return (value instanceof Collection)
+                                ? ((Collection<?>) value).stream().map(Object::toString)
                                 : Stream.of(value.toString());
                     })
                     .filter(e -> !e.isBlank())

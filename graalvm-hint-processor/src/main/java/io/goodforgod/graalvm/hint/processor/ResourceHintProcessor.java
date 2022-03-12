@@ -4,7 +4,6 @@ import io.goodforgod.graalvm.hint.annotation.ResourceHint;
 import java.util.*;
 import java.util.stream.Collectors;
 import javax.annotation.processing.*;
-import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
@@ -22,7 +21,6 @@ import javax.tools.Diagnostic;
         HintOptions.HINT_PROCESSING_GROUP,
         HintOptions.HINT_PROCESSING_ARTIFACT
 })
-@SupportedSourceVersion(SourceVersion.RELEASE_11)
 public final class ResourceHintProcessor extends AbstractHintProcessor {
 
     private static final String FILE_NAME = "resource-config.json";

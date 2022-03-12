@@ -7,8 +7,6 @@ import java.util.stream.Stream;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedOptions;
-import javax.annotation.processing.SupportedSourceVersion;
-import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
@@ -32,7 +30,6 @@ import javax.tools.Diagnostic;
         HintOptions.HINT_PROCESSING_GROUP,
         HintOptions.HINT_PROCESSING_ARTIFACT
 })
-@SupportedSourceVersion(SourceVersion.RELEASE_11)
 public final class NativeImageHintProcessor extends AbstractHintProcessor {
 
     private static final String ENTRY_POINT_DEFAULT_VALUE = Void.class.getSimpleName();
