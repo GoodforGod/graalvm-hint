@@ -1,0 +1,42 @@
+name: Java CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+      - dev
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java: [ '11', '17' ]
+    name: Java ${{ matrix.java }} setup
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: Set up JDK
+        uses: actions/setup-java@v1
+
+        with:
+          java-version: ${{ matrix.java }}
+
+      - name: Code Style
+        run: ./gradlew spotlessCheck
+
+      - name: Build
+        run: ./gradlew classes
+
+      - name: Test
+        run: ./gradlew test jacocoTestReport
+
+      - name: SonarQube
+        if: matrix.java == '17'
+        run: ./gradlew :graalvm-hint-processor:sonarqube
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
