@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 class NativeImageHintProcessorTests extends ProcessorRunner {
 
     @Test
-    void nativeImageHintEntrypointOnlySuccess() {
+    void nativeImageHintEntrypoint() {
         final Compilation compilation = Compiler.javac()
                 .withProcessors(new NativeImageHintProcessor())
                 .compile(JavaFileObjects.forResource("nativeimagehint/source/EntrypointOnly.java"));

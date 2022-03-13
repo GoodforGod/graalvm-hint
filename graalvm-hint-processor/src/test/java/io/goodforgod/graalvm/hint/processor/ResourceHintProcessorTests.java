@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 class ResourceHintProcessorTests extends ProcessorRunner {
 
     @Test
-    void resourceHintForClassSuccess() {
+    void resourceHintForClass() {
         final Compilation compilation = Compiler.javac()
                 .withProcessors(new ResourceHintProcessor())
                 .compile(JavaFileObjects.forResource("resourcehint/source/ResourceNames.java"));
@@ -29,7 +29,7 @@ class ResourceHintProcessorTests extends ProcessorRunner {
     }
 
     @Test
-    void resourceHintForMultipleClassesSuccess() {
+    void resourceHintForMultipleClasses() {
         final Compilation compilation = Compiler.javac()
                 .withProcessors(new ResourceHintProcessor())
                 .compile(JavaFileObjects.forResource("resourcehint/source/ResourceNames.java"),
