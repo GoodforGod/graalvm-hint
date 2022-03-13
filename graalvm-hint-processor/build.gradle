@@ -8,6 +8,14 @@ dependencies {
     testImplementation "com.google.testing.compile:compile-testing:0.19"
 }
 
+sonarqube {
+    properties {
+        property "sonar.host.url", "https://sonarcloud.io"
+        property "sonar.organization", "goodforgod"
+        property "sonar.projectKey", "GoodforGod_$artifactRootId"
+    }
+}
+
 publishing {
     publications {
         mavenJava(MavenPublication) {
@@ -15,12 +23,12 @@ publishing {
 
             pom {
                 name = "GraalVM Hint Processor"
-                url = "https://github.com/GoodforGod/$artifactId"
-                description = "GraalVM Hint Processor helps generate GraalVM hints."
+                url = "https://github.com/GoodforGod/$artifactRootId"
+                description = "GraalVM Hint Processor helps generate GraalVM hints for building native-image applications"
 
                 license {
                     name = "Apache License 2.0"
-                    url = "https://github.com/GoodforGod/$artifactId/blob/master/LICENSE"
+                    url = "https://github.com/GoodforGod/$artifactRootId/blob/master/LICENSE"
                     distribution = "repo"
                 }
 
@@ -32,9 +40,9 @@ publishing {
                 }
 
                 scm {
-                    connection = "scm:git:git://github.com/GoodforGod/${artifactId}.git"
-                    developerConnection = "scm:git:ssh://GoodforGod/${artifactId}.git"
-                    url = "https://github.com/GoodforGod/$artifactId/tree/master"
+                    connection = "scm:git:git://github.com/GoodforGod/${artifactRootId}.git"
+                    developerConnection = "scm:git:ssh://GoodforGod/${artifactRootId}.git"
+                    url = "https://github.com/GoodforGod/$artifactRootId/tree/master"
                 }
             }
         }
