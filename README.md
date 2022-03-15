@@ -20,8 +20,8 @@ Java 11+ is supported.
 
 [**Gradle**](https://mvnrepository.com/artifact/io.goodforgod/io.graalvm-hint-processor)
 ```groovy
-annotationProcessor "io.graalvm-hint-processor:0.15.0"
-compilyOnly "io.graalvm-hint-annotations:0.15.0"
+annotationProcessor "io.goodforgod:graalvm-hint-processor:0.15.0"
+compilyOnly "io.goodforgod:graalvm-hint-annotations:0.15.0"
 ```
 
 [**Maven**](https://mvnrepository.com/artifact/io.goodforgod/io.graalvm-hint-processor)
