@@ -1,0 +1,14 @@
+[{
+  "name": "io.goodforgod.graalvm.hint.processor",
+  "allPublicMethods": true
+},
+{
+  "name": "io.goodforgod.graalvm.hint.processor.HintOptions",
+  "allDeclaredFields": true
+},
+{
+  "name": "io.goodforgod.graalvm.hint.processor.Response",
+  "allDeclaredConstructors": true,
+  "allDeclaredFields": true,
+  "allDeclaredMethods": true
+}]

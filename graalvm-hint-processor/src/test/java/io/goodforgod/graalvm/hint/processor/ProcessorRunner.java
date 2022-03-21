@@ -7,8 +7,8 @@ import java.io.InputStreamReader;
 import java.util.stream.Collectors;
 
 /**
- * @author GoodforGod
- * @since 13.11.2019
+ * @author Anton Kurako (GoodforGod)
+ * @since 25.10.2021
  */
 abstract class ProcessorRunner {
 

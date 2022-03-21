@@ -1,0 +1,8 @@
+[{
+  "name": "io.goodforgod.graalvm.hint.processor.RequestOnlyManyAccess",
+  "allDeclaredConstructors": true,
+  "allDeclaredFields": true,
+  "allDeclaredMethods": true,
+  "allPublicConstructors": true,
+  "allPublicFields": true
+}]
