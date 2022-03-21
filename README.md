@@ -9,35 +9,36 @@
 GraalVM Hint Processor helps generate GraalVM hints for building [native-image](https://www.graalvm.org/reference-manual/native-image/) applications.
 
 Features:
-- Generate Reflection Hints ([reflect-config.json](https://www.graalvm.org/reference-manual/native-image/Reflection/))
-- Generate Resource Hints ([resource-config.json](https://www.graalvm.org/reference-manual/native-image/Resources/))
-- Generate Options hints ([native-image.properties](https://www.graalvm.org/reference-manual/native-image/Options/))
-- Generate Initialization hints ([native-image.properties](https://www.graalvm.org/reference-manual/native-image/ClassInitialization/))
+- Generate Reflection Hints ([reflect-config.json](#reflectionhint))
+- Generate Resource Hints ([resource-config.json](#resourcehint))
+- Generate Options hints ([native-image.properties](#nativeimagehint))
+- Generate Initialization Hints ([native-image.properties](#initializationhint))
+- Generate JNI Hints ([jni-config.json](#jnihint))
 
 ## Dependency :rocket:
 
 Java 11+ is supported.
 
-[**Gradle**](https://mvnrepository.com/artifact/io.goodforgod/io.graalvm-hint-processor)
+[**Gradle**](https://mvnrepository.com/artifact/io.goodforgod/graalvm-hint-processor)
 ```groovy
-annotationProcessor "io.goodforgod:graalvm-hint-processor:0.15.0"
-compilyOnly "io.goodforgod:graalvm-hint-annotations:0.15.0"
+annotationProcessor "io.goodforgod:graalvm-hint-processor:0.16.0"
+compilyOnly "io.goodforgod:graalvm-hint-annotations:0.16.0"
 ```
 
-[**Maven**](https://mvnrepository.com/artifact/io.goodforgod/io.graalvm-hint-processor)
+[**Maven**](https://mvnrepository.com/artifact/io.goodforgod/graalvm-hint-processor)
 ```xml
 <dependency>
     <dependency>
         <groupId>io.goodforgod</groupId>
         <artifactId>graalvm-hint-annotations</artifactId>
-        <version>0.15.0</version>
+        <version>0.16.0</version>
         <scope>compile</scope>
         <optional>true</optional>
     </dependency>
     <dependency>
         <groupId>io.goodforgod</groupId>
         <artifactId>graalvm-hint-processor</artifactId>
-        <version>0.15.0</version>
+        <version>0.16.0</version>
         <scope>provided</scope>
     </dependency>
 </dependencies>
@@ -55,7 +56,7 @@ compilyOnly "io.goodforgod:graalvm-hint-annotations:0.15.0"
                     <path>
                         <groupId>io.goodforgod</groupId>
                         <artifactId>graalvm-hint-processor</artifactId>
-                        <version>0.15.0</version>
+                        <version>0.16.0</version>
                     </path>
                 </annotationProcessorPaths>
             </configuration>
@@ -229,6 +230,66 @@ Resulted native-image.properties:
 Args = -H:Name=application -H:Class=io.goodforgod.graalvm.hint.processor.Entrypoint \
        --initialize-at-build-time=io.goodforgod.graalvm.hint.processor.HintOptions.class \
        --initialize-at-run-time=io.goodforgod.graalvm.hint.processor
+```
+
+### JniHint
+
+You can read more about GraalVM JNI configuration [here](https://www.graalvm.org/reference-manual/native-image/JNI/).
+
+There are available JNI access hints:
+- allPublicFields
+- allPublicMethods
+- allPublicConstructors
+- allDeclaredFields
+- allDeclaredMethods
+- allDeclaredConstructors
+
+Simple case for single Java class:
+```java
+@JniHint
+public class RequestOnly {
+
+    private String name;
+}
+```
+
+Generated JNI config:
+```json
+[{
+  "name": "io.goodforgod.graalvm.hint.processor.RequestOnly",
+  "allDeclaredConstructors": true,
+  "allDeclaredFields": true,
+  "allDeclaredMethods": true
+}]
+```
+
+There may be more different cases, like generating hints for classes that are package private or just private, also there hint can be used for whole package.
+
+Complex example generating reflection access:
+```java
+@JniHint(types = { Response.class, Request.class }, value = JniHint.AccessType.ALL_DECLARED_FIELDS)
+@JniHint(typeNames = { "io.goodforgod.graalvm.hint.processor"})
+public final class JniConfig {
+
+}
+```
+
+Resulted jni-config.json:
+```json
+[{
+  "name": "io.goodforgod.graalvm.hint.processor",
+  "allDeclaredConstructors": true,
+  "allDeclaredFields": true,
+  "allDeclaredMethods": true
+},
+{
+  "name": "io.goodforgod.example.Response",
+  "allDeclaredFields": true
+},
+{
+  "name": "io.goodforgod.example.Request",
+  "allDeclaredFields": true
+}]
 ```
 
 ## License
