@@ -1,3 +1,4 @@
 io.goodforgod.graalvm.hint.processor.NativeImageHintProcessor
 io.goodforgod.graalvm.hint.processor.ResourceHintProcessor
 io.goodforgod.graalvm.hint.processor.ReflectionHintProcessor
+io.goodforgod.graalvm.hint.processor.JniHintProcessor

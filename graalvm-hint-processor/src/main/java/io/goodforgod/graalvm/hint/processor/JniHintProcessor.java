@@ -1,8 +1,8 @@
 package io.goodforgod.graalvm.hint.processor;
 
+import io.goodforgod.graalvm.hint.annotation.JniHint;
+import io.goodforgod.graalvm.hint.annotation.JniHints;
 import io.goodforgod.graalvm.hint.annotation.ReflectionHint;
-import io.goodforgod.graalvm.hint.annotation.ReflectionHint.AccessType;
-import io.goodforgod.graalvm.hint.annotation.ReflectionHints;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -13,42 +13,46 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
 
 /**
- * Processes {@link ReflectionHint} annotation for native-image reflect-config.json file
+ * Processes {@link JniHint} annotation for native-image reflect-config.json file
  *
+ * @see JniHint
  * @author Anton Kurako (GoodforGod)
- * @see ReflectionHint
- * @since 27.09.2021
+ * @since 21.03.2022
  */
 @SupportedAnnotationTypes({
-        "io.goodforgod.graalvm.hint.annotation.ReflectionHint",
-        "io.goodforgod.graalvm.hint.annotation.ReflectionHints"
+        "io.goodforgod.graalvm.hint.annotation.JniHint",
+        "io.goodforgod.graalvm.hint.annotation.JniHints"
 })
 @SupportedOptions({
         HintOptions.HINT_PROCESSING_GROUP,
         HintOptions.HINT_PROCESSING_ARTIFACT
 })
-public final class ReflectionHintProcessor extends AbstractAccessHintProcessor {
+public final class JniHintProcessor extends AbstractAccessHintProcessor {
+
+    private static final Map<String, ReflectionHint.AccessType> ACCESS_TYPE_MAP = Arrays
+            .stream(ReflectionHint.AccessType.values())
+            .collect(Collectors.toMap(Enum::name, e -> e));
 
     @Override
     protected String getFileName() {
-        return "reflect-config.json";
+        return "jni-config.json";
     }
 
     @Override
     protected String getEmptyConfigWarningMessage() {
-        return "@ReflectionHint annotation found, but no reflection access hints parsed";
+        return "@JniHint annotation found, but no reflection access hints parsed";
     }
 
     @Override
     protected Set<TypeElement> getAnnotatedTypeElements(RoundEnvironment roundEnv) {
-        return getAnnotatedElements(roundEnv, ReflectionHint.class, ReflectionHints.class);
+        return getAnnotatedElements(roundEnv, JniHint.class, JniHints.class);
     }
 
     @Override
     protected Collection<Access> getGraalAccessForAnnotatedElement(TypeElement element) {
-        final ReflectionHints hints = element.getAnnotation(ReflectionHints.class);
+        final JniHints hints = element.getAnnotation(JniHints.class);
         if (hints == null) {
-            final ReflectionHint reflectionHint = element.getAnnotation(ReflectionHint.class);
+            final JniHint reflectionHint = element.getAnnotation(JniHint.class);
             return getGraalReflectionsForAnnotatedElement(element, reflectionHint, false);
         } else {
             return Arrays.stream(hints.value())
@@ -58,13 +62,13 @@ public final class ReflectionHintProcessor extends AbstractAccessHintProcessor {
     }
 
     private Collection<Access> getGraalReflectionsForAnnotatedElement(TypeElement element,
-                                                                      ReflectionHint hint,
+                                                                      JniHint hint,
                                                                       boolean isParentAnnotation) {
-        final AccessType[] accessTypes = hint.value();
+        final JniHint.AccessType[] accessTypes = hint.value();
         final List<String> typeNames = Arrays.asList(hint.typeNames());
         final List<String> types = (!isParentAnnotation)
-                ? getAnnotationFieldClassNames(element, ReflectionHint.class, "types")
-                : getAnnotationFieldClassNames(element, ReflectionHint.class, "types", ReflectionHints.class,
+                ? getAnnotationFieldClassNames(element, JniHint.class, "types")
+                : getAnnotationFieldClassNames(element, JniHint.class, "types", JniHints.class,
                         a -> ((AnnotationMirror) a).getElementValues().entrySet().stream()
                                 .filter(e -> e.getKey().getSimpleName().contentEquals("value"))
                                 .anyMatch(e -> {
@@ -82,11 +86,21 @@ public final class ReflectionHintProcessor extends AbstractAccessHintProcessor {
 
         if (types.isEmpty() && typeNames.isEmpty()) {
             final String selfName = element.getQualifiedName().toString();
-            return List.of(new Access(selfName, accessTypes));
+            final ReflectionHint.AccessType[] reflectionTypes = convert(accessTypes);
+            return List.of(new Access(selfName, reflectionTypes));
         }
 
         return Stream.concat(types.stream(), typeNames.stream())
-                .map(t -> new Access(t, accessTypes))
+                .map(type -> {
+                    final ReflectionHint.AccessType[] reflectionTypes = convert(accessTypes);
+                    return new Access(type, reflectionTypes);
+                })
                 .collect(Collectors.toList());
+    }
+
+    private static ReflectionHint.AccessType[] convert(JniHint.AccessType[] accessTypes) {
+        return Arrays.stream(accessTypes)
+                .map(accessType -> ACCESS_TYPE_MAP.get(accessType.name()))
+                .toArray(ReflectionHint.AccessType[]::new);
     }
 }
