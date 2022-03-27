@@ -8,6 +8,8 @@
 
 GraalVM Hint Processor helps generate GraalVM hints for building [native-image](https://www.graalvm.org/reference-manual/native-image/) applications.
 
+Fully AOT processing library, no dependencies, no runtime side-affects.
+
 Features:
 - Generate Reflection Hints ([reflect-config.json](#reflectionhint))
 - Generate Resource Hints ([resource-config.json](#resourcehint))
