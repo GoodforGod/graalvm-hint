@@ -21,8 +21,8 @@ Java 11+ is supported.
 
 [**Gradle**](https://mvnrepository.com/artifact/io.goodforgod/graalvm-hint-processor)
 ```groovy
-annotationProcessor "io.goodforgod:graalvm-hint-processor:0.16.0"
-compilyOnly "io.goodforgod:graalvm-hint-annotations:0.16.0"
+annotationProcessor "io.goodforgod:graalvm-hint-processor:0.17.0"
+compilyOnly "io.goodforgod:graalvm-hint-annotations:0.17.0"
 ```
 
 [**Maven**](https://mvnrepository.com/artifact/io.goodforgod/graalvm-hint-processor)
@@ -31,14 +31,14 @@ compilyOnly "io.goodforgod:graalvm-hint-annotations:0.16.0"
     <dependency>
         <groupId>io.goodforgod</groupId>
         <artifactId>graalvm-hint-annotations</artifactId>
-        <version>0.16.0</version>
+        <version>0.17.0</version>
         <scope>compile</scope>
         <optional>true</optional>
     </dependency>
     <dependency>
         <groupId>io.goodforgod</groupId>
         <artifactId>graalvm-hint-processor</artifactId>
-        <version>0.16.0</version>
+        <version>0.17.0</version>
         <scope>provided</scope>
     </dependency>
 </dependencies>
@@ -56,7 +56,7 @@ compilyOnly "io.goodforgod:graalvm-hint-annotations:0.16.0"
                     <path>
                         <groupId>io.goodforgod</groupId>
                         <artifactId>graalvm-hint-processor</artifactId>
-                        <version>0.16.0</version>
+                        <version>0.17.0</version>
                     </path>
                 </annotationProcessorPaths>
             </configuration>
@@ -174,7 +174,7 @@ public class EntrypointOnly {
 
 Resulted native-image.properties:
 ```properties
-Args = -H:Name=application -H:Class=io.goodforgod.graalvm.hint.processor.EntrypointOnly
+Args = -H:Class=io.goodforgod.graalvm.hint.processor.EntrypointOnly
 ```
 
 Complex hint configuration with options:
@@ -227,7 +227,7 @@ public class Entrypoint {
 
 Resulted native-image.properties:
 ```properties
-Args = -H:Name=application -H:Class=io.goodforgod.graalvm.hint.processor.Entrypoint \
+Args = -H:Class=io.goodforgod.graalvm.hint.processor.Entrypoint \
        --initialize-at-build-time=io.goodforgod.graalvm.hint.processor.HintOptions.class \
        --initialize-at-run-time=io.goodforgod.graalvm.hint.processor
 ```
