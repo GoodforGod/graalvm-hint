@@ -70,7 +70,14 @@ public final class ReflectionHintProcessor extends AbstractAccessHintProcessor {
                                 .anyMatch(e -> {
                                     final Object value = e.getValue().getValue();
                                     final List<String> accessTypesReflection = (value instanceof Collection)
-                                            ? ((Collection<?>) value).stream().map(Object::toString).collect(Collectors.toList())
+                                            ? ((Collection<?>) value).stream()
+                                                    .map(attr -> {
+                                                        // Java 11 and Java 17 behave differently (different impls)
+                                                        final String attrValue = attr.toString();
+                                                        return (attrValue.indexOf('.') == -1)
+                                                                ? attrValue
+                                                                : attrValue.substring(attrValue.lastIndexOf('.') + 1);
+                                                    }).collect(Collectors.toList())
                                             : List.of(value.toString());
 
                                     final List<String> accessTypeNames = Arrays.stream(accessTypes)
