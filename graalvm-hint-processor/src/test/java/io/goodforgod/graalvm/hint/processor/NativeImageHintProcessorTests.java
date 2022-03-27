@@ -9,13 +9,13 @@ import javax.tools.StandardLocation;
 import org.junit.jupiter.api.Test;
 
 /**
- * @author GoodforGod
- * @since 13.11.2019
+ * @author Anton Kurako (GoodforGod)
+ * @since 25.10.2021
  */
 class NativeImageHintProcessorTests extends ProcessorRunner {
 
     @Test
-    void nativeImageHintEntrypointOnlySuccess() {
+    void nativeImageHintEntrypoint() {
         final Compilation compilation = Compiler.javac()
                 .withProcessors(new NativeImageHintProcessor())
                 .compile(JavaFileObjects.forResource("nativeimagehint/source/EntrypointOnly.java"));

@@ -3,7 +3,6 @@ plugins {
     id "java-library"
     id "maven-publish"
 
-    id "org.sonarqube" version "3.3"
     id "com.diffplug.spotless" version "6.1.0"
 }
 
@@ -14,7 +13,6 @@ subprojects {
     apply plugin: "jacoco"
     apply plugin: "java-library"
     apply plugin: "maven-publish"
-    apply plugin: "org.sonarqube"
     apply plugin: "com.diffplug.spotless"
 
     repositories {

@@ -131,7 +131,7 @@ abstract class AbstractHintProcessor extends AbstractProcessor {
             return false;
         }
 
-        processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "Generated " + fileName + " file to: " + path);
+        processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "Generating file " + fileName + " to: " + path);
         return true;
     }
 

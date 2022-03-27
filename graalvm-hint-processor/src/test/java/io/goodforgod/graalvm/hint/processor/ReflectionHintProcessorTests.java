@@ -9,13 +9,13 @@ import javax.tools.StandardLocation;
 import org.junit.jupiter.api.Test;
 
 /**
- * @author GoodforGod
- * @since 13.11.2019
+ * @author Anton Kurako (GoodforGod)
+ * @since 25.10.2021
  */
 class ReflectionHintProcessorTests extends ProcessorRunner {
 
     @Test
-    void reflectionHintForSelfClassSuccess() {
+    void reflectionHintSelf() {
         final Compilation compilation = Compiler.javac()
                 .withProcessors(new ReflectionHintProcessor())
                 .compile(JavaFileObjects.forResource("reflectionhint/source/RequestOnly.java"));
@@ -29,7 +29,7 @@ class ReflectionHintProcessorTests extends ProcessorRunner {
     }
 
     @Test
-    void reflectionHintForMultipleAnnotationsSuccess() {
+    void reflectionHintForMultipleAnnotations() {
         final Compilation compilation = Compiler.javac()
                 .withProcessors(new ReflectionHintProcessor())
                 .compile(JavaFileObjects.forResource("reflectionhint/source/Response.java"));
@@ -43,7 +43,7 @@ class ReflectionHintProcessorTests extends ProcessorRunner {
     }
 
     @Test
-    void reflectionHintForMultipleClassesAndMultipleAnnotationsSuccess() {
+    void reflectionHintForMultipleClassesAndMultipleAnnotations() {
         final Compilation compilation = Compiler.javac()
                 .withProcessors(new ReflectionHintProcessor())
                 .compile(JavaFileObjects.forResource("reflectionhint/source/RequestOnly.java"),
@@ -58,7 +58,7 @@ class ReflectionHintProcessorTests extends ProcessorRunner {
     }
 
     @Test
-    void reflectionHintForMultipleAccessHintsSuccess() {
+    void reflectionHintForMultipleAccessHints() {
         final Compilation compilation = Compiler.javac()
                 .withProcessors(new ReflectionHintProcessor())
                 .compile(JavaFileObjects.forResource("reflectionhint/source/RequestOnlyManyAccess.java"));

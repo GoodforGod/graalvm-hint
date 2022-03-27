@@ -23,7 +23,7 @@ public @interface NativeImageHint {
     /**
      * @return name of application after native-image generation
      */
-    String name() default "application";
+    String name() default "";
 
     /**
      * @return additional options to include for configuring native-image

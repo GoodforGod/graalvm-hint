@@ -9,13 +9,13 @@ import javax.tools.StandardLocation;
 import org.junit.jupiter.api.Test;
 
 /**
- * @author GoodforGod
- * @since 13.11.2019
+ * @author Anton Kurako (GoodforGod)
+ * @since 25.10.2021
  */
 class ResourceHintProcessorTests extends ProcessorRunner {
 
     @Test
-    void resourceHintForClassSuccess() {
+    void resourceHintForClass() {
         final Compilation compilation = Compiler.javac()
                 .withProcessors(new ResourceHintProcessor())
                 .compile(JavaFileObjects.forResource("resourcehint/source/ResourceNames.java"));
@@ -29,7 +29,7 @@ class ResourceHintProcessorTests extends ProcessorRunner {
     }
 
     @Test
-    void resourceHintForMultipleClassesSuccess() {
+    void resourceHintForMultipleClasses() {
         final Compilation compilation = Compiler.javac()
                 .withProcessors(new ResourceHintProcessor())
                 .compile(JavaFileObjects.forResource("resourcehint/source/ResourceNames.java"),
