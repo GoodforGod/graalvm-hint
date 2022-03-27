@@ -147,7 +147,9 @@ public final class NativeImageHintProcessor extends AbstractHintProcessor {
     }
 
     private List<String> getEntrypointOptions(Entrypoint entrypoint) {
-        return List.of("-H:Name=" + entrypoint.hint.name() + " -H:Class=" + entrypoint.className);
+        return (entrypoint.hint.name().isBlank())
+                ? List.of("-H:Class=" + entrypoint.className)
+                : List.of("-H:Name=" + entrypoint.hint.name() + " -H:Class=" + entrypoint.className);
     }
 
     private List<String> getInitializationHintProperties(Set<TypeElement> elements) {
