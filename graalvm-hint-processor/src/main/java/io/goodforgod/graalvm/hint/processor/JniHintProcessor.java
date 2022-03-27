@@ -9,7 +9,6 @@ import java.util.stream.Stream;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedOptions;
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
 
 /**
@@ -64,44 +63,20 @@ public final class JniHintProcessor extends AbstractAccessHintProcessor {
     private Collection<Access> getGraalReflectionsForAnnotatedElement(TypeElement element,
                                                                       JniHint hint,
                                                                       boolean isParentAnnotation) {
-        final JniHint.AccessType[] accessTypes = hint.value();
+        final ReflectionHint.AccessType[] accessTypes = convert(hint.value());
         final List<String> typeNames = Arrays.asList(hint.typeNames());
         final List<String> types = (!isParentAnnotation)
                 ? getAnnotationFieldClassNames(element, JniHint.class, "types")
                 : getAnnotationFieldClassNames(element, JniHint.class, "types", JniHints.class,
-                        a -> ((AnnotationMirror) a).getElementValues().entrySet().stream()
-                                .filter(e -> e.getKey().getSimpleName().contentEquals("value"))
-                                .anyMatch(e -> {
-                                    final Object value = e.getValue().getValue();
-                                    final List<String> accessTypesReflection = (value instanceof Collection)
-                                            ? ((Collection<?>) value).stream()
-                                                    .map(attr -> {
-                                                        // Java 11 and Java 17 behave differently (different impls)
-                                                        final String attrValue = attr.toString();
-                                                        return (attrValue.indexOf('.') == -1)
-                                                                ? attrValue
-                                                                : attrValue.substring(attrValue.lastIndexOf('.') + 1);
-                                                    }).collect(Collectors.toList())
-                                            : List.of(value.toString());
-
-                                    final List<String> accessTypeNames = Arrays.stream(accessTypes)
-                                            .map(Enum::name)
-                                            .collect(Collectors.toList());
-
-                                    return accessTypesReflection.equals(accessTypeNames);
-                                }));
+                        getParentAnnotationPredicate(accessTypes));
 
         if (types.isEmpty() && typeNames.isEmpty()) {
             final String selfName = element.getQualifiedName().toString();
-            final ReflectionHint.AccessType[] reflectionTypes = convert(accessTypes);
-            return List.of(new Access(selfName, reflectionTypes));
+            return List.of(new Access(selfName, accessTypes));
         }
 
         return Stream.concat(types.stream(), typeNames.stream())
-                .map(type -> {
-                    final ReflectionHint.AccessType[] reflectionTypes = convert(accessTypes);
-                    return new Access(type, reflectionTypes);
-                })
+                .map(type -> new Access(type, accessTypes))
                 .collect(Collectors.toList());
     }
 

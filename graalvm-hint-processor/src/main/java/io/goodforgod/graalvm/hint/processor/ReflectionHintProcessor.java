@@ -9,7 +9,6 @@ import java.util.stream.Stream;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedOptions;
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
 
 /**
@@ -65,27 +64,7 @@ public final class ReflectionHintProcessor extends AbstractAccessHintProcessor {
         final List<String> types = (!isParentAnnotation)
                 ? getAnnotationFieldClassNames(element, ReflectionHint.class, "types")
                 : getAnnotationFieldClassNames(element, ReflectionHint.class, "types", ReflectionHints.class,
-                        a -> ((AnnotationMirror) a).getElementValues().entrySet().stream()
-                                .filter(e -> e.getKey().getSimpleName().contentEquals("value"))
-                                .anyMatch(e -> {
-                                    final Object value = e.getValue().getValue();
-                                    final List<String> accessTypesReflection = (value instanceof Collection)
-                                            ? ((Collection<?>) value).stream()
-                                                    .map(attr -> {
-                                                        // Java 11 and Java 17 behave differently (different impls)
-                                                        final String attrValue = attr.toString();
-                                                        return (attrValue.indexOf('.') == -1)
-                                                                ? attrValue
-                                                                : attrValue.substring(attrValue.lastIndexOf('.') + 1);
-                                                    }).collect(Collectors.toList())
-                                            : List.of(value.toString());
-
-                                    final List<String> accessTypeNames = Arrays.stream(accessTypes)
-                                            .map(Enum::name)
-                                            .collect(Collectors.toList());
-
-                                    return accessTypesReflection.equals(accessTypeNames);
-                                }));
+                        getParentAnnotationPredicate(accessTypes));
 
         if (types.isEmpty() && typeNames.isEmpty()) {
             final String selfName = element.getQualifiedName().toString();
