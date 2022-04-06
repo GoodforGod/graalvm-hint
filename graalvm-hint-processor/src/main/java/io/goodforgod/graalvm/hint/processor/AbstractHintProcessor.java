@@ -139,23 +139,29 @@ abstract class AbstractHintProcessor extends AbstractProcessor {
         final Element enclosingElement = element.getEnclosingElement();
         if (enclosingElement instanceof PackageElement) {
             final String typeName = ((PackageElement) enclosingElement).getQualifiedName().toString();
-            return (typeName.contains("."))
-                    ? typeName.substring(0, typeName.lastIndexOf('.'))
-                    : typeName;
-        } else {
-            return DEFAULT_GROUP;
+            // class without package declare: unnamed package
+            if (!typeName.isEmpty()) {
+                return (typeName.contains("."))
+                        ? typeName.substring(0, typeName.lastIndexOf('.'))
+                        : typeName;
+            }
         }
+
+        return DEFAULT_GROUP;
     }
 
     private String getArtifact(Element element) {
         final Element enclosingElement = element.getEnclosingElement();
         if (enclosingElement instanceof PackageElement) {
             final String typeName = ((PackageElement) enclosingElement).getQualifiedName().toString();
-            return (typeName.contains("."))
-                    ? typeName.substring(typeName.lastIndexOf('.') + 1)
-                    : DEFAULT_ARTIFACT;
-        } else {
-            return DEFAULT_ARTIFACT;
+            // class without package declare: unnamed package
+            if (!typeName.isEmpty()) {
+                return (typeName.contains("."))
+                        ? typeName.substring(typeName.lastIndexOf('.') + 1)
+                        : DEFAULT_ARTIFACT;
+            }
         }
+
+        return DEFAULT_ARTIFACT;
     }
 }
