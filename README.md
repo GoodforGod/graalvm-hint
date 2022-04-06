@@ -1,10 +1,10 @@
 # GraalVM Hint Processor
 
 ![GraalVM Enabled](https://img.shields.io/badge/GraalVM-Ready-orange?style=plastic)
-[![GitHub Action](https://github.com/goodforgod/graalvm-hint-processor/workflows/Java%20CI/badge.svg)](https://github.com/GoodforGod/graalvm-hint-processor/actions?query=workflow%3A%22Java+CI%22)
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=GoodforGod_graalvm-hint-processor&metric=coverage)](https://sonarcloud.io/dashboard?id=GoodforGod_graalvm-hint-processor)
-[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=GoodforGod_graalvm-hint-processor&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=GoodforGod_graalvm-hint-processor)
-[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=GoodforGod_graalvm-hint-processor&metric=ncloc)](https://sonarcloud.io/dashboard?id=GoodforGod_graalvm-hint-processor)
+[![GitHub Action](https://github.com/goodforgod/graalvm-hint/workflows/Java%20CI/badge.svg)](https://github.com/GoodforGod/graalvm-hint/actions?query=workflow%3A%22Java+CI%22)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=GoodforGod_graalvm-hint&metric=coverage)](https://sonarcloud.io/dashboard?id=GoodforGod_graalvm-hint)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=GoodforGod_graalvm-hint&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=GoodforGod_graalvm-hint)
+[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=GoodforGod_graalvm-hint&metric=ncloc)](https://sonarcloud.io/dashboard?id=GoodforGod_graalvm-hint)
 
 GraalVM Hint Processor helps generate GraalVM hints for building [native-image](https://www.graalvm.org/reference-manual/native-image/) applications.
 

@@ -139,12 +139,13 @@ abstract class AbstractHintProcessor extends AbstractProcessor {
         final Element enclosingElement = element.getEnclosingElement();
         if (enclosingElement instanceof PackageElement) {
             final String typeName = ((PackageElement) enclosingElement).getQualifiedName().toString();
-            return (typeName.contains("."))
-                    ? typeName.substring(0, typeName.lastIndexOf('.'))
-                    : typeName;
-        } else {
-            return DEFAULT_GROUP;
+            if (!typeName.isEmpty()) {  // class without package declare: unnamed package
+                return (typeName.contains("."))
+                        ? typeName.substring(0, typeName.lastIndexOf('.'))
+                        : typeName;
+            }
         }
+        return DEFAULT_GROUP;
     }
 
     private String getArtifact(Element element) {
