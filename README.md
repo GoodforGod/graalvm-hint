@@ -212,7 +212,7 @@ public class EntrypointOnly {
 
 Resulted native-image.properties:
 ```properties
-Args = --initialize-at-build-time=io.goodforgod.graalvm.hint.processor.HintOptions.class \
+Args = --initialize-at-build-time=io.goodforgod.graalvm.hint.processor.HintOrigin.class \
        --initialize-at-run-time=io.goodforgod.graalvm.hint.processor
 ```
 
@@ -230,7 +230,7 @@ public class Entrypoint {
 Resulted native-image.properties:
 ```properties
 Args = -H:Class=io.goodforgod.graalvm.hint.processor.Entrypoint \
-       --initialize-at-build-time=io.goodforgod.graalvm.hint.processor.HintOptions.class \
+       --initialize-at-build-time=io.goodforgod.graalvm.hint.processor.HintOrigin.class \
        --initialize-at-run-time=io.goodforgod.graalvm.hint.processor
 ```
 
