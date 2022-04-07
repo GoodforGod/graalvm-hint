@@ -1,12 +1,12 @@
 package io.goodforgod.graalvm.hint.processor;
 
 /**
- * Hint options that are registered to be used in GraalVM Hint Gradle Plugin
+ * Hint origin package and artifact
  *
  * @author Anton Kurako (GoodforGod)
  * @since 29.09.2021
  */
-final class HintOptions {
+final class HintOrigin {
 
     public static final String HINT_PROCESSING_GROUP = "graalvm.hint.group";
     public static final String HINT_PROCESSING_ARTIFACT = "graalvm.hint.artifact";
@@ -21,7 +21,7 @@ final class HintOptions {
      */
     private final String artifact;
 
-    HintOptions(String group, String artifact) {
+    HintOrigin(String group, String artifact) {
         this.group = group;
         this.artifact = artifact;
     }

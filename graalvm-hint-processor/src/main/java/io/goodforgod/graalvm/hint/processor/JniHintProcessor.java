@@ -23,8 +23,8 @@ import javax.lang.model.element.TypeElement;
         "io.goodforgod.graalvm.hint.annotation.JniHints"
 })
 @SupportedOptions({
-        HintOptions.HINT_PROCESSING_GROUP,
-        HintOptions.HINT_PROCESSING_ARTIFACT
+        HintOrigin.HINT_PROCESSING_GROUP,
+        HintOrigin.HINT_PROCESSING_ARTIFACT
 })
 public final class JniHintProcessor extends AbstractAccessHintProcessor {
 
@@ -52,17 +52,17 @@ public final class JniHintProcessor extends AbstractAccessHintProcessor {
         final JniHints hints = element.getAnnotation(JniHints.class);
         if (hints == null) {
             final JniHint reflectionHint = element.getAnnotation(JniHint.class);
-            return getGraalReflectionsForAnnotatedElement(element, reflectionHint, false);
+            return getGraalAccessForAnnotatedElement(element, reflectionHint, false);
         } else {
             return Arrays.stream(hints.value())
-                    .flatMap(hint -> getGraalReflectionsForAnnotatedElement(element, hint, true).stream())
+                    .flatMap(hint -> getGraalAccessForAnnotatedElement(element, hint, true).stream())
                     .collect(Collectors.toList());
         }
     }
 
-    private Collection<Access> getGraalReflectionsForAnnotatedElement(TypeElement element,
-                                                                      JniHint hint,
-                                                                      boolean isParentAnnotation) {
+    private Collection<Access> getGraalAccessForAnnotatedElement(TypeElement element,
+                                                                 JniHint hint,
+                                                                 boolean isParentAnnotation) {
         final ReflectionHint.AccessType[] accessTypes = convert(hint.value());
         final List<String> typeNames = Arrays.asList(hint.typeNames());
         final List<String> types = (!isParentAnnotation)

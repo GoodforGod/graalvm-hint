@@ -18,8 +18,8 @@ import javax.tools.Diagnostic;
  */
 @SupportedAnnotationTypes("io.goodforgod.graalvm.hint.annotation.ResourceHint")
 @SupportedOptions({
-        HintOptions.HINT_PROCESSING_GROUP,
-        HintOptions.HINT_PROCESSING_ARTIFACT
+        HintOrigin.HINT_PROCESSING_GROUP,
+        HintOrigin.HINT_PROCESSING_ARTIFACT
 })
 public final class ResourceHintProcessor extends AbstractHintProcessor {
 
@@ -43,7 +43,9 @@ public final class ResourceHintProcessor extends AbstractHintProcessor {
                 return false;
             }
 
-            return writeConfigFile(FILE_NAME, resourceConfigJson.get(), roundEnv);
+            final HintOrigin origin = getHintOrigin(roundEnv, processingEnv);
+            final String filePath = origin.getRelativePathForFile(FILE_NAME);
+            return writeConfigFile(filePath, resourceConfigJson.get(), processingEnv);
         } catch (Exception e) {
             e.printStackTrace();
             return false;

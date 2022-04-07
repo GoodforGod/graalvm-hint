@@ -17,23 +17,15 @@ public @interface DynamicProxyHint {
 
     @Target({ ElementType.ANNOTATION_TYPE })
     @Retention(RetentionPolicy.SOURCE)
-    @interface DynamicProxyConfiguration {
+    @interface Configuration {
 
         /**
          * @return The interfaces to provide a hint (preferred because typesafe)
          */
         Class[] interfaces() default {};
-
-        /**
-         * Alternative way to configure Interface names, should be used when type visibility
-         * prevents using {@link #interfaces()} references.
-         *
-         * @return the interface names
-         */
-        String[] interfaceNames() default {};
     }
 
-    DynamicProxyConfiguration[] configurations() default {};
+    Configuration[] value() default {};
 
     String[] files() default {};
 

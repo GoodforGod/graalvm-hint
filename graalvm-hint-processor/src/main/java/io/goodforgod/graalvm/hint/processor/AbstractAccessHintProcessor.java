@@ -116,7 +116,9 @@ abstract class AbstractAccessHintProcessor extends AbstractHintProcessor {
                 return false;
             }
 
-            return writeConfigFile(getFileName(), configJson.get(), roundEnv);
+            final HintOrigin origin = getHintOrigin(roundEnv, processingEnv);
+            final String filePath = origin.getRelativePathForFile(getFileName());
+            return writeConfigFile(filePath, configJson.get(), processingEnv);
         } catch (Exception e) {
             e.printStackTrace();
             return false;
