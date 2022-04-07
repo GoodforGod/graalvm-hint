@@ -23,7 +23,7 @@ class ResourceHintProcessorTests extends ProcessorRunner {
         CompilationSubject.assertThat(compilation).succeeded();
         CompilationSubject.assertThat(compilation)
                 .generatedFile(StandardLocation.CLASS_OUTPUT,
-                        "META-INF/native-image/io.goodforgod.graalvm.hint/processor/resource-config.json")
+                        "META-INF/native-image/io.goodforgod.graalvm.hint.processor/hint/resource-config.json")
                 .contentsAsString(StandardCharsets.UTF_8)
                 .isEqualTo(getResourceContentAsString("resourcehint/generated/resource-config-single.json"));
     }
@@ -38,7 +38,7 @@ class ResourceHintProcessorTests extends ProcessorRunner {
         CompilationSubject.assertThat(compilation).succeeded();
         CompilationSubject.assertThat(compilation)
                 .generatedFile(StandardLocation.CLASS_OUTPUT,
-                        "META-INF/native-image/io.goodforgod.graalvm.hint/processor/resource-config.json")
+                        "META-INF/native-image/io.goodforgod.graalvm.hint.processor/hint/resource-config.json")
                 .contentsAsString(StandardCharsets.UTF_8)
                 .isEqualTo(getResourceContentAsString("resourcehint/generated/resource-config.json"));
     }
