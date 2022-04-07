@@ -1,0 +1,4 @@
+[
+  { "interfaces": [ "io.goodforgod.graalvm.hint.processor.OptionParser", "io.goodforgod.graalvm.hint.processor.HintOrigin" ] },
+  { "interfaces": [ "io.goodforgod.graalvm.hint.processor.HintOrigin" ] }
+]
