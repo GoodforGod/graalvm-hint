@@ -25,6 +25,20 @@ abstract class AbstractHintProcessor extends AbstractProcessor {
     private static final String DEFAULT_PACKAGE = "io.graalvm.hint";
     private static final String DEFAULT_ARTIFACT = "hint";
 
+    protected abstract Set<Class<? extends Annotation>> getSupportedAnnotations();
+
+    @Override
+    public Set<String> getSupportedAnnotationTypes() {
+        return getSupportedAnnotations().stream()
+                .map(Class::getName)
+                .collect(Collectors.toSet());
+    }
+
+    @Override
+    public Set<String> getSupportedOptions() {
+        return Set.of(HintOrigin.HINT_PROCESSING_GROUP, HintOrigin.HINT_PROCESSING_ARTIFACT);
+    }
+
     @Override
     public SourceVersion getSupportedSourceVersion() {
         SourceVersion sourceVersion = SourceVersion.latest();

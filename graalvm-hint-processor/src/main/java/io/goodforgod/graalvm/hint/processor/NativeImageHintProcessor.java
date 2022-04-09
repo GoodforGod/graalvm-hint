@@ -1,11 +1,10 @@
 package io.goodforgod.graalvm.hint.processor;
 
 import io.goodforgod.graalvm.hint.annotation.*;
+import java.lang.annotation.Annotation;
 import java.util.*;
 import java.util.stream.Collectors;
 import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
-import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
 
@@ -20,16 +19,6 @@ import javax.tools.Diagnostic;
  * @see InitializationHint
  * @since 30.09.2021
  */
-@SupportedAnnotationTypes({
-        "io.goodforgod.graalvm.hint.annotation.DynamicProxyHint",
-        "io.goodforgod.graalvm.hint.annotation.NativeImageHint",
-        "io.goodforgod.graalvm.hint.annotation.InitializationHint",
-        "io.goodforgod.graalvm.hint.annotation.InitializationHints"
-})
-@SupportedOptions({
-        HintOrigin.HINT_PROCESSING_GROUP,
-        HintOrigin.HINT_PROCESSING_ARTIFACT
-})
 public final class NativeImageHintProcessor extends AbstractHintProcessor {
 
     private static final String FILE_NAME = "native-image.properties";
@@ -45,8 +34,17 @@ public final class NativeImageHintProcessor extends AbstractHintProcessor {
             DYNAMIC_PROXY_HINT_PARSER);
 
     @Override
-    public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        if (annotations.isEmpty()) {
+    protected Set<Class<? extends Annotation>> getSupportedAnnotations() {
+        return Set.of(
+                DynamicProxyHint.class,
+                NativeImageHint.class,
+                InitializationHint.class,
+                InitializationHints.class);
+    }
+
+    @Override
+    public boolean process(Set<? extends TypeElement> annotatedElements, RoundEnvironment roundEnv) {
+        if (annotatedElements.isEmpty()) {
             return false;
         }
 
@@ -56,8 +54,14 @@ public final class NativeImageHintProcessor extends AbstractHintProcessor {
                     .collect(Collectors.toList());
 
             if (options.isEmpty()) {
-                processingEnv.getMessager().printMessage(Diagnostic.Kind.MANDATORY_WARNING,
-                        "@NativeImageHint are present but no options found");
+                final String annotations = OPTION_PARSERS.stream()
+                        .flatMap(p -> p.annotations().stream()
+                                .filter(a -> !roundEnv.getElementsAnnotatedWith(a).isEmpty()))
+                        .map(Class::getSimpleName)
+                        .collect(Collectors.joining(","));
+
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING,
+                        annotations + " are present but no options retrieved");
                 return false;
             } else {
                 final String nativeImageProperties = options.stream()
@@ -67,6 +71,9 @@ public final class NativeImageHintProcessor extends AbstractHintProcessor {
                 final String filePath = origin.getRelativePathForFile(FILE_NAME);
                 return writeConfigFile(filePath, nativeImageProperties, processingEnv);
             }
+        } catch (HintException e) {
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, e.getMessage());
+            return false;
         } catch (Exception e) {
             e.printStackTrace();
             return false;

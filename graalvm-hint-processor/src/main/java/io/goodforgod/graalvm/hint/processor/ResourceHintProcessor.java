@@ -1,6 +1,7 @@
 package io.goodforgod.graalvm.hint.processor;
 
 import io.goodforgod.graalvm.hint.annotation.ResourceHint;
+import java.lang.annotation.Annotation;
 import java.util.*;
 import java.util.stream.Collectors;
 import javax.annotation.processing.*;
@@ -16,15 +17,15 @@ import javax.tools.Diagnostic;
  * @see ResourceHint
  * @since 27.09.2021
  */
-@SupportedAnnotationTypes("io.goodforgod.graalvm.hint.annotation.ResourceHint")
-@SupportedOptions({
-        HintOrigin.HINT_PROCESSING_GROUP,
-        HintOrigin.HINT_PROCESSING_ARTIFACT
-})
 public final class ResourceHintProcessor extends AbstractHintProcessor {
 
     private static final String FILE_NAME = "resource-config.json";
     private static final String PATTERN = "pattern";
+
+    @Override
+    protected Set<Class<? extends Annotation>> getSupportedAnnotations() {
+        return Set.of(ResourceHint.class);
+    }
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {

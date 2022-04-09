@@ -3,12 +3,11 @@ package io.goodforgod.graalvm.hint.processor;
 import io.goodforgod.graalvm.hint.annotation.ReflectionHint;
 import io.goodforgod.graalvm.hint.annotation.ReflectionHint.AccessType;
 import io.goodforgod.graalvm.hint.annotation.ReflectionHints;
+import java.lang.annotation.Annotation;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
-import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.element.TypeElement;
 
 /**
@@ -18,15 +17,14 @@ import javax.lang.model.element.TypeElement;
  * @see ReflectionHint
  * @since 27.09.2021
  */
-@SupportedAnnotationTypes({
-        "io.goodforgod.graalvm.hint.annotation.ReflectionHint",
-        "io.goodforgod.graalvm.hint.annotation.ReflectionHints"
-})
-@SupportedOptions({
-        HintOrigin.HINT_PROCESSING_GROUP,
-        HintOrigin.HINT_PROCESSING_ARTIFACT
-})
 public final class ReflectionHintProcessor extends AbstractAccessHintProcessor {
+
+    @Override
+    protected Set<Class<? extends Annotation>> getSupportedAnnotations() {
+        return Set.of(
+                ReflectionHint.class,
+                ReflectionHints.class);
+    }
 
     @Override
     protected String getFileName() {
