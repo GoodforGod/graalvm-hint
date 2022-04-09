@@ -6,6 +6,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * Java dynamic proxies, implemented by java.lang.reflect.Proxy, provide a mechanism which enables
+ * object level access control by routing all method invocations through
+ * java.lang.reflect.InvocationHandler
+ *
  * @see <a href="https://www.graalvm.org/reference-manual/native-image/DynamicProxy/">GraalVM
  *          Info</a>
  * @author Anton Kurako (GoodforGod)
@@ -25,9 +29,20 @@ public @interface DynamicProxyHint {
         Class[] interfaces() default {};
     }
 
+    /**
+     * @see <a href=
+     *          "https://www.graalvm.org/22.0/reference-manual/native-image/DynamicProxy/#manual-configuration">GraalVM</a>
+     * @return Manual configurations for Dynamic proxy
+     */
     Configuration[] value() default {};
 
+    /**
+     * @return file configs to include under DynamicProxyConfigurationFiles option
+     */
     String[] files() default {};
 
+    /**
+     * @return resources configs to include under DynamicProxyConfigurationResources option
+     */
     String[] resources() default {};
 }
