@@ -63,7 +63,7 @@ final class DynamicProxyHintParser implements OptionParser {
                     .collect(Collectors.joining(",\n", "[\n", "\n]"));
 
             final HintOrigin origin = getHintOrigin(roundEnv, processingEnv);
-            final String filePath = origin.getRelativePathForFile("dynamic-proxy-hint.json");
+            final String filePath = origin.getRelativePathForFile("dynamic-proxy-config.json");
             AbstractHintProcessor.writeConfigFile(filePath, proxyConfigurationFile, processingEnv);
             resources.add(filePath);
         }
