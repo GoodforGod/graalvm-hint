@@ -27,7 +27,11 @@ public enum NativeImageOptions {
     ENABLE_HTTPS("--enable-https"),
     ENABLE_URL_PROTOCOLS("--enable-url-protocols"),
     ALLOW_INCOMPLETE_CLASSPATH("--allow-incomplete-classpath"),
-    REPORT_UNSUPPORTED("--report-unsupported-elements-at-runtime");
+    REPORT_UNSUPPORTED("--report-unsupported-elements-at-runtime"),
+    INCLUDE_ALL_LOCALES("-H:+IncludeAllLocales"),
+    LOCALISATION_OPTIMIZED_MODE("-H:-LocalizationOptimizedMode"),
+    LOG_REGISTERED_RESOURCE_MIN("-H:Log=registerResource:1"),
+    LOG_REGISTERED_RESOURCE_MAX("-H:Log=registerResource:5");
 
     private final String option;
 

@@ -19,7 +19,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.SOURCE)
 public @interface DynamicProxyHint {
 
-    @Target({ ElementType.ANNOTATION_TYPE })
     @Retention(RetentionPolicy.SOURCE)
     @interface Configuration {
 

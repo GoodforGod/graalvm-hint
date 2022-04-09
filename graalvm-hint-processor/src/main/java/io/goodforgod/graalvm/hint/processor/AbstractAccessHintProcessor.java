@@ -10,7 +10,6 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.TypeElement;
-import javax.tools.Diagnostic;
 
 /**
  * Processes {@link ReflectionHint} and {@link JniHint} annotations for native-image hint files
@@ -65,11 +64,12 @@ abstract class AbstractAccessHintProcessor extends AbstractHintProcessor {
 
     protected abstract String getFileName();
 
-    protected abstract String getEmptyConfigWarningMessage();
-
-    protected abstract Set<TypeElement> getAnnotatedTypeElements(RoundEnvironment roundEnv);
-
     protected abstract Collection<Access> getGraalAccessForAnnotatedElement(TypeElement element);
+
+    protected Set<TypeElement> getAnnotatedTypeElements(RoundEnvironment roundEnv) {
+        final Class[] classes = getSupportedAnnotations().toArray(Class[]::new);
+        return HintUtils.getAnnotatedElements(roundEnv, classes);
+    }
 
     protected Predicate<AnnotationValue> getParentAnnotationPredicate(ReflectionHint.AccessType[] accessTypes) {
         return a -> ((AnnotationMirror) a).getElementValues().entrySet().stream()
@@ -110,29 +110,21 @@ abstract class AbstractAccessHintProcessor extends AbstractHintProcessor {
                     .sorted()
                     .collect(Collectors.toList());
 
-            final Optional<String> configJson = getAccessConfigJson(accesses);
-            if (configJson.isEmpty()) {
-                processingEnv.getMessager().printMessage(Diagnostic.Kind.MANDATORY_WARNING, getEmptyConfigWarningMessage());
-                return false;
-            }
-
-            final HintOrigin origin = getHintOrigin(roundEnv, processingEnv);
+            final String configJson = getAccessConfigJson(accesses);
+            final HintOrigin origin = HintUtils.getHintOrigin(roundEnv, processingEnv);
             final String filePath = origin.getRelativePathForFile(getFileName());
-            return writeConfigFile(filePath, configJson.get(), processingEnv);
+            return HintUtils.writeConfigFile(filePath, configJson, processingEnv);
         } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
     }
 
-    private Optional<String> getAccessConfigJson(Collection<Access> accesses) {
-        if (accesses.isEmpty())
-            return Optional.empty();
-
-        return Optional.of(accesses.stream()
+    private String getAccessConfigJson(Collection<Access> accesses) {
+        return accesses.stream()
                 .map(AbstractAccessHintProcessor::getGraalReflectionForTypeName)
                 .map(AbstractAccessHintProcessor::mapToJson)
-                .collect(Collectors.joining(",\n", "[", "]")));
+                .collect(Collectors.joining(",\n", "[", "]"));
     }
 
     private static String mapToJson(Map<String, Object> map) {
