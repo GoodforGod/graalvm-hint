@@ -4,7 +4,7 @@ import io.goodforgod.graalvm.hint.annotation.ResourceHint;
 import java.lang.annotation.Annotation;
 import java.util.*;
 import java.util.stream.Collectors;
-import javax.annotation.processing.*;
+import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
@@ -20,7 +20,25 @@ import javax.tools.Diagnostic;
 public final class ResourceHintProcessor extends AbstractHintProcessor {
 
     private static final String FILE_NAME = "resource-config.json";
-    private static final String PATTERN = "pattern";
+
+    private static class Resources {
+
+        private final Set<String> includes = new HashSet<>();
+        private final Set<String> excludes = new HashSet<>();
+        private final Set<String> bundles = new HashSet<>();
+
+        boolean haveIncludes() {
+            return !includes.isEmpty();
+        }
+
+        boolean haveExcludes() {
+            return !excludes.isEmpty();
+        }
+
+        boolean haveBundles() {
+            return !bundles.isEmpty();
+        }
+    }
 
     @Override
     protected Set<Class<? extends Annotation>> getSupportedAnnotations() {
@@ -35,49 +53,98 @@ public final class ResourceHintProcessor extends AbstractHintProcessor {
 
         try {
             final Set<? extends Element> annotated = roundEnv.getElementsAnnotatedWith(ResourceHint.class);
-            final Set<TypeElement> types = ElementFilter.typesIn(annotated);
+            final Set<TypeElement> elements = ElementFilter.typesIn(annotated);
 
-            final Optional<String> resourceConfigJson = getResourceConfigJsonValue(types);
-            if (resourceConfigJson.isEmpty()) {
-                processingEnv.getMessager().printMessage(Diagnostic.Kind.MANDATORY_WARNING,
-                        "@ResourceHint found, but patterns are not present");
-                return false;
-            }
+            final String resourceConfigJson = getResourceConfig(elements);
 
-            final HintOrigin origin = getHintOrigin(roundEnv, processingEnv);
+            final HintOrigin origin = HintUtils.getHintOrigin(roundEnv, processingEnv);
             final String filePath = origin.getRelativePathForFile(FILE_NAME);
-            return writeConfigFile(filePath, resourceConfigJson.get(), processingEnv);
+            return HintUtils.writeConfigFile(filePath, resourceConfigJson, processingEnv);
+        } catch (HintException e) {
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, e.getMessage());
+            return false;
         } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
     }
 
-    private static Optional<String> getResourceConfigJsonValue(Set<TypeElement> types) {
-        final Collection<String> resourcePatterns = getGraalVMResourcePattens(types);
-        if (resourcePatterns.isEmpty()) {
-            return Optional.empty();
+    private static String getResourceConfig(Set<TypeElement> elements) {
+        final Resources resources = getResources(elements);
+        final StringBuilder configBuilder = new StringBuilder();
+        configBuilder.append("{");
+        if (resources.haveIncludes() || resources.haveExcludes()) {
+            configBuilder.append("\n  \"resources\": {\n");
+            if (resources.haveIncludes()) {
+                final String includePart = getResourceConfigPart("includes", resources.includes);
+                configBuilder.append(includePart);
+            }
+
+            if (resources.haveExcludes()) {
+                if (resources.haveIncludes()) {
+                    configBuilder.append(",\n");
+                }
+
+                final String excludePart = getResourceConfigPart("excludes", resources.excludes);
+                configBuilder.append(excludePart);
+            }
+
+            if (resources.haveBundles()) {
+                configBuilder.append("\n  },");
+            } else {
+                configBuilder.append("\n  }");
+            }
         }
 
-        final String resourceConfig = resourcePatterns.stream()
-                .map(ResourceHintProcessor::mapPatternToGraalVM)
+        if (resources.haveBundles()) {
+            configBuilder.append("\n");
+            final String bundlePart = getBundleConfigPart(resources.bundles);
+            configBuilder.append(bundlePart);
+        }
+
+        configBuilder.append("\n}");
+
+        return configBuilder.toString();
+    }
+
+    private static String getResourceConfigPart(String partName, Collection<String> resources) {
+        return resources.stream()
                 .sorted()
-                .map(resource -> Map.of(PATTERN, resource))
-                .flatMap(m -> m.entrySet().stream())
-                .map(r -> String.format("    { \"%s\" : \"%s\" }", r.getKey(), r.getValue()))
-                .collect(Collectors.joining(",\n", "{\n  \"resources\": [\n", "\n  ]\n}"));
-
-        return Optional.of(resourceConfig);
+                .map(resource -> String.format("      { \"%s\": \"%s\" }", "pattern", resource))
+                .collect(Collectors.joining(",\n", "    \"" + partName + "\": [\n", "\n    ]"));
     }
 
-    private static Collection<String> getGraalVMResourcePattens(Set<TypeElement> types) {
-        return types.stream()
-                .flatMap(t -> Arrays.stream(t.getAnnotation(ResourceHint.class).patterns()))
-                .filter(r -> !r.isBlank())
-                .collect(Collectors.toSet());
+    private static String getBundleConfigPart(Collection<String> bundles) {
+        return bundles.stream()
+                .sorted()
+                .map(bundle -> String.format("    { \"%s\": \"%s\" }", "name", bundle))
+                .collect(Collectors.joining(",\n", "  \"bundles\": [\n", "\n  ]"));
     }
 
-    private static String mapPatternToGraalVM(String pattern) {
-        return pattern;
+    private static Resources getResources(Set<TypeElement> elements) {
+        final Resources resources = new Resources();
+        for (TypeElement element : elements) {
+            final ResourceHint annotation = element.getAnnotation(ResourceHint.class);
+            final List<String> includeBatch = filterValues(annotation.include());
+            final List<String> excludeBatch = filterValues(annotation.exclude());
+            final List<String> bundleBatch = filterValues(annotation.bundles());
+            if (includeBatch.isEmpty() && excludeBatch.isEmpty() && bundleBatch.isEmpty()) {
+                throw new HintException(element.getQualifiedName().toString() + " is annotated with @"
+                        + ResourceHint.class.getSimpleName()
+                        + ", but no valid 'include' or 'exclude' or 'bundle' parameters specified!");
+            }
+
+            resources.includes.addAll(includeBatch);
+            resources.excludes.addAll(excludeBatch);
+            resources.bundles.addAll(bundleBatch);
+        }
+
+        return resources;
+    }
+
+    private static List<String> filterValues(String[] stringValues) {
+        return Arrays.stream(stringValues)
+                .filter(a -> !a.isBlank())
+                .collect(Collectors.toList());
     }
 }
