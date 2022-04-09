@@ -1,7 +1,0 @@
-{
-  "resources": [
-    { "pattern" : "*.xml" },
-    { "pattern" : "application.yml" },
-    { "pattern" : "simplelogger.properties" }
-  ]
-}

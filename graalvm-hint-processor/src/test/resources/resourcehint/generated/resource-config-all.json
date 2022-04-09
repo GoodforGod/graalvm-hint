@@ -1,0 +1,14 @@
+{
+  "resources": {
+    "includes": [
+      { "pattern": "application.yml" },
+      { "pattern": "simplelogger.properties" }
+    ],
+    "excludes": [
+      { "pattern": "*.xml" }
+    ]
+  },
+  "bundles": [
+    { "name": "your.pkg.Bundle" }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "resources": {
+    "excludes": [
+      { "pattern": "*.xml" }
+    ]
+  },
+  "bundles": [
+    { "name": "your.pkg.Bundle" }
+  ]
+}
