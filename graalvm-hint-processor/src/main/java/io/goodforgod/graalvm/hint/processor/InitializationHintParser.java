@@ -5,6 +5,7 @@ import static io.goodforgod.graalvm.hint.processor.AbstractHintProcessor.getAnno
 
 import io.goodforgod.graalvm.hint.annotation.InitializationHint;
 import io.goodforgod.graalvm.hint.annotation.InitializationHints;
+import java.lang.annotation.Annotation;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -54,6 +55,11 @@ final class InitializationHintParser implements OptionParser {
         public int hashCode() {
             return Objects.hash(className);
         }
+    }
+
+    @Override
+    public List<Class<? extends Annotation>> annotations() {
+        return List.of(InitializationHint.class, InitializationHints.class);
     }
 
     @Override

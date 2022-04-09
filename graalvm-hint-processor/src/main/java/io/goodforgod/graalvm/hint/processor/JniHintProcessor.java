@@ -3,12 +3,11 @@ package io.goodforgod.graalvm.hint.processor;
 import io.goodforgod.graalvm.hint.annotation.JniHint;
 import io.goodforgod.graalvm.hint.annotation.JniHints;
 import io.goodforgod.graalvm.hint.annotation.ReflectionHint;
+import java.lang.annotation.Annotation;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
-import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.element.TypeElement;
 
 /**
@@ -18,19 +17,18 @@ import javax.lang.model.element.TypeElement;
  * @author Anton Kurako (GoodforGod)
  * @since 21.03.2022
  */
-@SupportedAnnotationTypes({
-        "io.goodforgod.graalvm.hint.annotation.JniHint",
-        "io.goodforgod.graalvm.hint.annotation.JniHints"
-})
-@SupportedOptions({
-        HintOrigin.HINT_PROCESSING_GROUP,
-        HintOrigin.HINT_PROCESSING_ARTIFACT
-})
 public final class JniHintProcessor extends AbstractAccessHintProcessor {
 
     private static final Map<String, ReflectionHint.AccessType> ACCESS_TYPE_MAP = Arrays
             .stream(ReflectionHint.AccessType.values())
             .collect(Collectors.toMap(Enum::name, e -> e));
+
+    @Override
+    protected Set<Class<? extends Annotation>> getSupportedAnnotations() {
+        return Set.of(
+                JniHint.class,
+                JniHints.class);
+    }
 
     @Override
     protected String getFileName() {

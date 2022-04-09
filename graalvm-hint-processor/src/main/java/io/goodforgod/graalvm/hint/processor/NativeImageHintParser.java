@@ -4,6 +4,7 @@ import static io.goodforgod.graalvm.hint.processor.AbstractHintProcessor.getAnno
 
 import io.goodforgod.graalvm.hint.annotation.NativeImageHint;
 import io.goodforgod.graalvm.hint.annotation.NativeImageOptions;
+import java.lang.annotation.Annotation;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -34,6 +35,11 @@ final class NativeImageHintParser implements OptionParser {
             this.className = className;
             this.hint = hint;
         }
+    }
+
+    @Override
+    public List<Class<? extends Annotation>> annotations() {
+        return List.of(NativeImageHint.class);
     }
 
     @Override
