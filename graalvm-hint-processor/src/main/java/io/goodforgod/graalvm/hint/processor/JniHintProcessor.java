@@ -7,7 +7,6 @@ import java.lang.annotation.Annotation;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.TypeElement;
 
 /**
@@ -36,16 +35,6 @@ public final class JniHintProcessor extends AbstractAccessHintProcessor {
     }
 
     @Override
-    protected String getEmptyConfigWarningMessage() {
-        return "@JniHint annotation found, but no reflection access hints parsed";
-    }
-
-    @Override
-    protected Set<TypeElement> getAnnotatedTypeElements(RoundEnvironment roundEnv) {
-        return getAnnotatedElements(roundEnv, JniHint.class, JniHints.class);
-    }
-
-    @Override
     protected Collection<Access> getGraalAccessForAnnotatedElement(TypeElement element) {
         final JniHints hints = element.getAnnotation(JniHints.class);
         if (hints == null) {
@@ -64,8 +53,8 @@ public final class JniHintProcessor extends AbstractAccessHintProcessor {
         final ReflectionHint.AccessType[] accessTypes = convert(hint.value());
         final List<String> typeNames = Arrays.asList(hint.typeNames());
         final List<String> types = (!isParentAnnotation)
-                ? getAnnotationFieldClassNames(element, JniHint.class, "types")
-                : getAnnotationFieldClassNames(element, JniHint.class, "types", JniHints.class,
+                ? HintUtils.getAnnotationFieldClassNames(element, JniHint.class, "types")
+                : HintUtils.getAnnotationFieldClassNames(element, JniHint.class, "types", JniHints.class,
                         getParentAnnotationPredicate(accessTypes));
 
         if (types.isEmpty() && typeNames.isEmpty()) {

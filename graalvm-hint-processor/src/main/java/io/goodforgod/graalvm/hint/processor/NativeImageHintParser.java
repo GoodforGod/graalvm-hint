@@ -1,7 +1,5 @@
 package io.goodforgod.graalvm.hint.processor;
 
-import static io.goodforgod.graalvm.hint.processor.AbstractHintProcessor.getAnnotationFieldClassNameAny;
-
 import io.goodforgod.graalvm.hint.annotation.NativeImageHint;
 import io.goodforgod.graalvm.hint.annotation.NativeImageOptions;
 import java.lang.annotation.Annotation;
@@ -29,11 +27,20 @@ final class NativeImageHintParser implements OptionParser {
     private static class Entrypoint {
 
         private final String className;
-        private final NativeImageHint hint;
+        private final TypeElement source;
 
-        private Entrypoint(String className, NativeImageHint hint) {
+        private Entrypoint(String className, TypeElement source) {
             this.className = className;
-            this.hint = hint;
+            this.source = source;
+        }
+
+        NativeImageHint hint() {
+            return source.getAnnotation(NativeImageHint.class);
+        }
+
+        @Override
+        public String toString() {
+            return "entrypoint=" + className + ", source=" + source.getQualifiedName();
         }
     }
 
@@ -48,15 +55,15 @@ final class NativeImageHintParser implements OptionParser {
         final Set<TypeElement> elements = ElementFilter.typesIn(annotatedNative);
 
         final List<Entrypoint> entrypoints = elements.stream()
-                .map(t -> getAnnotationFieldClassNameAny(t, NativeImageHint.class, "entrypoint")
+                .map(element -> HintUtils.getAnnotationFieldClassNameAny(element, NativeImageHint.class, "entrypoint")
                         .filter(name -> !ENTRY_POINT_DEFAULT_VALUE.equals(name))
-                        .map(name -> new Entrypoint(name, t.getAnnotation(NativeImageHint.class)))
+                        .map(name -> new Entrypoint(name, element))
                         .orElse(null))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
         if (entrypoints.size() > 1) {
-            throw new IllegalStateException("@NativeImageHint multiple entrypoint detected with values: " + entrypoints);
+            throw new HintException("@NativeImageHint multiple entrypoints detected: " + entrypoints);
         }
 
         final Optional<Entrypoint> entryClassName = entrypoints.stream().findFirst();
@@ -79,8 +86,9 @@ final class NativeImageHintParser implements OptionParser {
     }
 
     private List<String> getEntrypointOptions(Entrypoint entrypoint) {
-        return (entrypoint.hint.name().isBlank())
+        final String appName = entrypoint.hint().name();
+        return (appName.isBlank())
                 ? List.of("-H:Class=" + entrypoint.className)
-                : List.of("-H:Name=" + entrypoint.hint.name() + " -H:Class=" + entrypoint.className);
+                : List.of("-H:Class=" + entrypoint.className + " -H:Name=" + appName);
     }
 }

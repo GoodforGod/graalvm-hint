@@ -1,8 +1,5 @@
 package io.goodforgod.graalvm.hint.processor;
 
-import static io.goodforgod.graalvm.hint.processor.AbstractHintProcessor.getAnnotatedElements;
-import static io.goodforgod.graalvm.hint.processor.AbstractHintProcessor.getAnnotationFieldClassNames;
-
 import io.goodforgod.graalvm.hint.annotation.InitializationHint;
 import io.goodforgod.graalvm.hint.annotation.InitializationHints;
 import java.lang.annotation.Annotation;
@@ -64,7 +61,8 @@ final class InitializationHintParser implements OptionParser {
 
     @Override
     public List<String> getOptions(RoundEnvironment roundEnv, ProcessingEnvironment processingEnv) {
-        final Set<TypeElement> elements = getAnnotatedElements(roundEnv, InitializationHint.class, InitializationHints.class);
+        final Set<TypeElement> elements = HintUtils.getAnnotatedElements(roundEnv, InitializationHint.class,
+                InitializationHints.class);
 
         final Map<InitializationHint.InitPhase, List<Initialization>> groupedInitializationOptions = elements.stream()
                 .flatMap(e -> {
@@ -91,8 +89,8 @@ final class InitializationHintParser implements OptionParser {
 
     private Stream<Initialization> getInitializations(TypeElement element, InitializationHint hint, boolean isParentAnnotation) {
         final List<String> types = (isParentAnnotation)
-                ? getAnnotationFieldClassNames(element, InitializationHint.class, "types", InitializationHints.class)
-                : getAnnotationFieldClassNames(element, InitializationHint.class, "types");
+                ? HintUtils.getAnnotationFieldClassNames(element, InitializationHint.class, "types", InitializationHints.class)
+                : HintUtils.getAnnotationFieldClassNames(element, InitializationHint.class, "types");
 
         final List<String> typeNames = Arrays.asList(hint.typeNames());
         if (types.isEmpty() && typeNames.isEmpty()) {

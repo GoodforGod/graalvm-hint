@@ -1,8 +1,12 @@
 package io.goodforgod.graalvm.hint.processor;
 
-import io.goodforgod.graalvm.hint.annotation.*;
+import io.goodforgod.graalvm.hint.annotation.DynamicProxyHint;
+import io.goodforgod.graalvm.hint.annotation.InitializationHint;
+import io.goodforgod.graalvm.hint.annotation.InitializationHints;
+import io.goodforgod.graalvm.hint.annotation.NativeImageHint;
 import java.lang.annotation.Annotation;
-import java.util.*;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.TypeElement;
@@ -67,9 +71,9 @@ public final class NativeImageHintProcessor extends AbstractHintProcessor {
                 final String nativeImageProperties = options.stream()
                         .collect(Collectors.joining(ARG_SEPARATOR, "Args = ", ""));
 
-                final HintOrigin origin = getHintOrigin(roundEnv, processingEnv);
+                final HintOrigin origin = HintUtils.getHintOrigin(roundEnv, processingEnv);
                 final String filePath = origin.getRelativePathForFile(FILE_NAME);
-                return writeConfigFile(filePath, nativeImageProperties, processingEnv);
+                return HintUtils.writeConfigFile(filePath, nativeImageProperties, processingEnv);
             }
         } catch (HintException e) {
             processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, e.getMessage());

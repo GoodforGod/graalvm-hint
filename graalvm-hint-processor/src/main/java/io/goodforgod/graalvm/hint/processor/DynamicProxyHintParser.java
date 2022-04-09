@@ -1,8 +1,7 @@
 package io.goodforgod.graalvm.hint.processor;
 
-import static io.goodforgod.graalvm.hint.processor.AbstractHintProcessor.getHintOrigin;
-
 import io.goodforgod.graalvm.hint.annotation.DynamicProxyHint;
+import java.lang.annotation.Annotation;
 import java.util.*;
 import java.util.stream.Collectors;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -36,6 +35,11 @@ final class DynamicProxyHintParser implements OptionParser {
     }
 
     @Override
+    public List<Class<? extends Annotation>> annotations() {
+        return List.of(DynamicProxyHint.class);
+    }
+
+    @Override
     public List<String> getOptions(RoundEnvironment roundEnv, ProcessingEnvironment processingEnv) {
         final Set<? extends Element> annotated = roundEnv.getElementsAnnotatedWith(DynamicProxyHint.class);
         final Set<TypeElement> elements = ElementFilter.typesIn(annotated);
@@ -62,9 +66,9 @@ final class DynamicProxyHintParser implements OptionParser {
                             .collect(Collectors.joining("\", \"", "  { \"interfaces\": [ \"", "\" ] }")))
                     .collect(Collectors.joining(",\n", "[\n", "\n]"));
 
-            final HintOrigin origin = getHintOrigin(roundEnv, processingEnv);
+            final HintOrigin origin = HintUtils.getHintOrigin(roundEnv, processingEnv);
             final String filePath = origin.getRelativePathForFile("dynamic-proxy-config.json");
-            AbstractHintProcessor.writeConfigFile(filePath, proxyConfigurationFile, processingEnv);
+            HintUtils.writeConfigFile(filePath, proxyConfigurationFile, processingEnv);
             resources.add(filePath);
         }
 
@@ -88,13 +92,13 @@ final class DynamicProxyHintParser implements OptionParser {
         final String annotationName = DynamicProxyHint.Configuration.class.getSimpleName();
         final String annotationParent = DynamicProxyHint.class.getSimpleName();
         final AnnotationTypeFieldVisitor visitor = new AnnotationTypeFieldVisitor(annotationName, "interfaces");
-        final List<Configuration> configurations = element.getAnnotationMirrors().stream()
+        final List<Configuration> interfaceConfigurations = element.getAnnotationMirrors().stream()
                 .filter(a -> a.getAnnotationType().asElement().getSimpleName().contentEquals(annotationParent))
                 .flatMap(a -> a.getElementValues().entrySet().stream()
                         .filter(e -> e.getKey().getSimpleName().contentEquals("value"))
                         .flatMap(e -> ((List<?>) e.getValue().getValue()).stream()
                                 .map(an -> {
-                                    final List<String> interfaces = ((AnnotationValue) an).accept(visitor, "").stream()
+                                    final List<String> interfaces = ((AnnotationValue) an).accept(visitor, null).stream()
                                             .map(c -> c.substring(0, c.length() - 6))
                                             .collect(Collectors.toList());
 
@@ -102,6 +106,25 @@ final class DynamicProxyHintParser implements OptionParser {
                                 })))
                 .collect(Collectors.toList());
 
-        return configurations;
+        if (interfaceConfigurations.isEmpty() && isSelfConfiguration(element)) {
+            if (element.getKind().isInterface()) {
+                interfaceConfigurations.add(new Configuration(List.of(element.getQualifiedName().toString())));
+            } else {
+                throw new HintException(element.getQualifiedName().toString() + " is annotated with @"
+                        + DynamicProxyHint.class.getSimpleName() + " hint but is not an interface");
+            }
+        }
+
+        return interfaceConfigurations;
+    }
+
+    private boolean isSelfConfiguration(TypeElement element) {
+        final DynamicProxyHint annotation = element.getAnnotation(DynamicProxyHint.class);
+        if (annotation == null) {
+            return false;
+        }
+
+        return (annotation.resources() == null || annotation.resources().length == 0)
+                && (annotation.files() == null || annotation.files().length == 0);
     }
 }
