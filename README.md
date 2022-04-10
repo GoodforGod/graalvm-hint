@@ -138,11 +138,12 @@ Resulted reflection-config.json:
 
 You can read more about GraalVM resource configuration [here](https://www.graalvm.org/reference-manual/native-image/Resources/).
 
-Hint allows generating config for resource files to include into native application.
+Hint allows generating config for resource files to be included/excluded when building native application.
+You can also include bundles into native image using this Hint.
 
-Hint configuration:
+Include Hint:
 ```java
-@ResourceHint(patterns = { "simplelogger.properties", "application.yml", "*.xml" })
+@ResourceHint(include = { "simplelogger.properties", "application.yml", "*.xml" })
 public class ResourceNames {
 
 }
@@ -151,10 +152,48 @@ public class ResourceNames {
 Resulted resource-config.json:
 ```json
 {
-  "resources": [
-    { "pattern" : "*.xml" },
-    { "pattern" : "application.yml" },
-    { "pattern" : "simplelogger.properties" }
+  "resources": {
+    "includes": [
+      { "pattern" : "*.xml" },
+      { "pattern": "application.yml" },
+      { "pattern": "simplelogger.properties" }
+    ]
+  }
+}
+```
+
+Exclude Hint:
+```java
+@ResourceHint(exclude = { "*.xml" })
+public class ResourceNames {
+
+}
+```
+
+Resulted resource-config.json:
+```json
+{
+  "resources": {
+    "excludes": [
+      { "pattern": "*.xml" }
+    ]
+  }
+}
+```
+
+Bundle Hint:
+```java
+@ResourceHint(bundles = { "your.pkg.Bundle" })
+public class ResourceNames {
+
+}
+```
+
+Resulted resource-config.json:
+```json
+{
+  "bundles": [
+    { "name": "your.pkg.Bundle" }
   ]
 }
 ```
@@ -190,7 +229,7 @@ public class Entrypoint {
 
 Resulted native-image.properties:
 ```properties
-Args = -H:Name=myapp -H:Class=io.goodforgod.graalvm.hint.processor.Entrypoint \
+Args = -H:Class=io.goodforgod.graalvm.hint.processor.Entrypoint -H:Name=myapp \
        -H:+PrintClassInitialization \
        -H:+InlineBeforeAnalysis
 ```
