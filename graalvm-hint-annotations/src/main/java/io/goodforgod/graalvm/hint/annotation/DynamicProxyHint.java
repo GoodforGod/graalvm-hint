@@ -19,13 +19,14 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.SOURCE)
 public @interface DynamicProxyHint {
 
+    @Target({})
     @Retention(RetentionPolicy.SOURCE)
     @interface Configuration {
 
         /**
          * @return The interfaces to provide a hint (preferred because typesafe)
          */
-        Class[] interfaces() default {};
+        Class<?>[] interfaces();
     }
 
     /**

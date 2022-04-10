@@ -35,7 +35,7 @@ final class DynamicProxyHintParser implements OptionParser {
     }
 
     @Override
-    public List<Class<? extends Annotation>> annotations() {
+    public List<Class<? extends Annotation>> getSupportedAnnotations() {
         return List.of(DynamicProxyHint.class);
     }
 
@@ -120,10 +120,6 @@ final class DynamicProxyHintParser implements OptionParser {
 
     private boolean isSelfConfiguration(TypeElement element) {
         final DynamicProxyHint annotation = element.getAnnotation(DynamicProxyHint.class);
-        if (annotation == null) {
-            return false;
-        }
-
         return (annotation.resources() == null || annotation.resources().length == 0)
                 && (annotation.files() == null || annotation.files().length == 0);
     }

@@ -59,7 +59,7 @@ public final class NativeImageHintProcessor extends AbstractHintProcessor {
 
             if (options.isEmpty()) {
                 final String annotations = OPTION_PARSERS.stream()
-                        .flatMap(p -> p.annotations().stream()
+                        .flatMap(p -> p.getSupportedAnnotations().stream()
                                 .filter(a -> !roundEnv.getElementsAnnotatedWith(a).isEmpty()))
                         .map(Class::getSimpleName)
                         .collect(Collectors.joining(","));

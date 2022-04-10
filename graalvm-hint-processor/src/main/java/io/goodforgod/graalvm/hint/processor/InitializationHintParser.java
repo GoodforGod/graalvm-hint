@@ -55,7 +55,7 @@ final class InitializationHintParser implements OptionParser {
     }
 
     @Override
-    public List<Class<? extends Annotation>> annotations() {
+    public List<Class<? extends Annotation>> getSupportedAnnotations() {
         return List.of(InitializationHint.class, InitializationHints.class);
     }
 

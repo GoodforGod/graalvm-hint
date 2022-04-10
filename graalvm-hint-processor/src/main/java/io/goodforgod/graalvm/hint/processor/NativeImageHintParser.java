@@ -45,7 +45,7 @@ final class NativeImageHintParser implements OptionParser {
     }
 
     @Override
-    public List<Class<? extends Annotation>> annotations() {
+    public List<Class<? extends Annotation>> getSupportedAnnotations() {
         return List.of(NativeImageHint.class);
     }
 
