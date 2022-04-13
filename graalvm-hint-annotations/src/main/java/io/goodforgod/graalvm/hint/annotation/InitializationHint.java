@@ -22,7 +22,7 @@ public @interface InitializationHint {
     InitPhase value() default InitPhase.BUILD;
 
     /**
-     * @return The types to provide a initialization (preferred because typesafe)
+     * @return The types to provide an initialization (preferred because typesafe)
      */
     Class[] types() default {};
 

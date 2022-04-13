@@ -92,14 +92,14 @@ final class DynamicProxyHintParser implements OptionParser {
         final String annotationName = DynamicProxyHint.Configuration.class.getSimpleName();
         final String annotationParent = DynamicProxyHint.class.getSimpleName();
         final String elementName = element.getQualifiedName().toString();
-        final AnnotationTypeFieldVisitor visitor = new AnnotationTypeFieldVisitor(annotationName, "interfaces");
         final List<Configuration> interfaceConfigurations = element.getAnnotationMirrors().stream()
                 .filter(a -> a.getAnnotationType().asElement().getSimpleName().contentEquals(annotationParent))
                 .flatMap(a -> a.getElementValues().entrySet().stream()
                         .filter(e -> e.getKey().getSimpleName().contentEquals("value"))
                         .flatMap(e -> ((List<?>) e.getValue().getValue()).stream()
                                 .map(an -> {
-                                    final List<String> interfaces = ((AnnotationValue) an).accept(visitor, null).stream()
+                                    final List<String> interfaces = ((AnnotationValue) an)
+                                            .accept(new AnnotationTypeFieldVisitor(annotationName, "interfaces"), null).stream()
                                             .map(c -> c.substring(0, c.length() - 6))
                                             .collect(Collectors.toList());
 
