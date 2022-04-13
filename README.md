@@ -296,6 +296,27 @@ Args = -H:Class=io.goodforgod.graalvm.hint.processor.Entrypoint \
        --initialize-at-run-time=io.goodforgod.graalvm.hint.processor
 ```
 
+### Self Configuration
+
+Simple case for single Java class:
+```java
+@ReflectionHint
+public class RequestOnly {
+
+    private String name;
+}
+```
+
+Generated *reflection-config.json*:
+```json
+[{
+  "name": "io.goodforgod.graalvm.hint.processor.RequestOnly",
+  "allDeclaredConstructors": true,
+  "allDeclaredFields": true,
+  "allDeclaredMethods": true
+}]
+```
+
 ## DynamicProxyHint
 
 You can read more about GraalVM DynamicProxyHint configuration [in official documentation here](https://www.graalvm.org/reference-manual/native-image/DynamicProxy/).
