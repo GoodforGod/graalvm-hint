@@ -82,6 +82,8 @@ There are available access hints:
 
 Generating reflection access, most used cases is DTOs that are used for serialization/deserialization in any format (JSON for example).
 
+### Self Configuration
+
 Simple case for single Java class:
 ```java
 @ReflectionHint
@@ -100,6 +102,8 @@ Generated *reflection-config.json*:
   "allDeclaredMethods": true
 }]
 ```
+
+### Complex Configuration
 
 There may be more different cases, like generating hints for classes that are package private or just private, also there hint can be used for whole package.
 
@@ -138,6 +142,10 @@ You can read more about GraalVM resource configuration [in official documentatio
 Hint allows generating config for resource files to be included/excluded when building native application.
 You can also include bundles into native image using this Hint.
 
+### Include Patterns
+
+Resource patterns specified with Java regexp to Include during native-image generation into the final application.
+
 Include Hint:
 ```java
 @ResourceHint(include = { "simplelogger.properties", "application.yml", "*.xml" })
@@ -159,6 +167,10 @@ Generated *resource-config.json*:
 }
 ```
 
+### Exclude Patterns
+
+Resource patterns specified with Java regexp to Exclude during native-image generation into the final application.
+
 Exclude Hint:
 ```java
 @ResourceHint(exclude = { "*.xml" })
@@ -177,6 +189,10 @@ Generated *resource-config.json*:
   }
 }
 ```
+
+### Include Bundles
+
+Native Image needs ahead-of-time knowledge of the resource bundles your application needs so that it can load and store the appropriate bundles for usage in the generated binary.
 
 Bundle Hint:
 ```java
@@ -201,6 +217,8 @@ You can read more about GraalVM native-image options [in official documentation 
 
 Hint allows generating config for native-image options and initial application entrypoint.
 
+### Application Entrypoint
+
 Simple hint configuration:
 ```java
 @NativeImageHint(entrypoint = EntrypointOnly.class)
@@ -214,6 +232,8 @@ Generated *native-image.properties*:
 ```properties
 Args = -H:Class=io.goodforgod.graalvm.hint.processor.EntrypointOnly
 ```
+
+### Complex Options
 
 Complex hint configuration with options:
 ```java
@@ -237,6 +257,8 @@ You can read more about GraalVM initialization configuration [in official docume
 
 Hint allows generating config for what classes to instantiate in runtime and what classes to instantiate in compile time.
 
+### Runtime and Compile Time
+
 Initialization hint configuration:
 ```java
 @InitializationHint(value = InitializationHint.InitPhase.BUILD, types = HintOptions.class)
@@ -251,6 +273,10 @@ Generated *native-image.properties*:
 Args = --initialize-at-build-time=io.goodforgod.graalvm.hint.processor.HintOrigin.class \
        --initialize-at-run-time=io.goodforgod.graalvm.hint.processor
 ```
+
+### Entrypoint and Initialization
+
+`@NativeImageHint` and `@InitializationHint` can annotate different classes, it doesn't matter.
 
 Options and initialization hint configuration:
 ```java
@@ -274,6 +300,8 @@ Args = -H:Class=io.goodforgod.graalvm.hint.processor.Entrypoint \
 
 You can read more about GraalVM DynamicProxyHint configuration [in official documentation here](https://www.graalvm.org/reference-manual/native-image/DynamicProxy/).
 
+### Resources & Files
+
 Use can pass dynamic proxy resources (*-H:DynamicProxyConfigurationResources*) or files (*-H:DynamicProxyConfigurationFiles*) using corresponding options:
 ```java
 @DynamicProxyHint(resources = {"proxy-resource.json"}, files = {"proxy-file.json"})
@@ -288,8 +316,9 @@ Args = -H:DynamicProxyConfigurationFiles=proxy-file.json \
        -H:DynamicProxyConfigurationResources=proxy-resource.json
 ```
 
-You can configure files yourself using annotations only without the need for manually creating JSON configurations.
+### Interface Configuration
 
+You can configure files yourself using annotations only without the need for manually creating JSON configurations.
 ```java
 @DynamicProxyHint(value = {
         @DynamicProxyHint.Configuration(interfaces = {OptionParser.class, HintOrigin.class}),
@@ -313,6 +342,28 @@ Generated *native-image.properties*:
 Args = -H:DynamicProxyConfigurationResources=META-INF/native-image/io.goodforgod.graalvm.hint.processor/hint/dynamic-proxy-config.json
 ```
 
+#### Self Configuration
+
+In case you need to add only one interface for DynamicProxy Hint configuration, you can annotate that interface directly:
+```java
+@DynamicProxyHint
+public interface Self {
+
+}
+```
+
+Generated *dynamic-proxy-hint-config.json*:
+```json
+[
+  { "interfaces": [ "io.goodforgod.graalvm.hint.processor.Self" ] }
+]
+```
+
+Generated *native-image.properties*:
+```properties
+Args = -H:DynamicProxyConfigurationResources=META-INF/native-image/io.goodforgod.graalvm.hint.processor/hint/dynamic-proxy-config.json
+```
+
 ## JniHint
 
 You can read more about GraalVM JNI configuration [in official documentation here](https://www.graalvm.org/reference-manual/native-image/JNI/).
@@ -324,6 +375,8 @@ There are available JNI access hints:
 - allDeclaredFields
 - allDeclaredMethods
 - allDeclaredConstructors
+
+### Self Configuration
 
 Simple case for single Java class:
 ```java
@@ -343,6 +396,8 @@ Generated *jni-config.json*:
   "allDeclaredMethods": true
 }]
 ```
+
+### Complex Configuration
 
 There may be more different cases, like generating hints for classes that are package private or just private, also there hint can be used for whole package.
 
