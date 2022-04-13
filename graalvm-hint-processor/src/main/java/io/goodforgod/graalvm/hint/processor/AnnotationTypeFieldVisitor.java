@@ -15,7 +15,7 @@ import javax.lang.model.type.TypeMirror;
  * @author Anton Kurako (GoodforGod)
  * @since 10.10.2021
  */
-final class AnnotationTypeFieldVisitor implements AnnotationValueVisitor<List<String>, String> {
+final class AnnotationTypeFieldVisitor implements AnnotationValueVisitor<List<String>, Void> {
 
     private final String annotationName;
     private final String annotationFieldName;
@@ -26,67 +26,67 @@ final class AnnotationTypeFieldVisitor implements AnnotationValueVisitor<List<St
     }
 
     @Override
-    public List<String> visit(AnnotationValue av, String s) {
+    public List<String> visit(AnnotationValue av, Void unused) {
         return Collections.emptyList();
     }
 
     @Override
-    public List<String> visitBoolean(boolean b, String s) {
+    public List<String> visitBoolean(boolean b, Void unused) {
         return Collections.emptyList();
     }
 
     @Override
-    public List<String> visitByte(byte b, String s) {
+    public List<String> visitByte(byte b, Void unused) {
         return Collections.emptyList();
     }
 
     @Override
-    public List<String> visitChar(char c, String s) {
+    public List<String> visitChar(char c, Void unused) {
         return Collections.emptyList();
     }
 
     @Override
-    public List<String> visitDouble(double d, String s) {
+    public List<String> visitDouble(double d, Void unused) {
         return Collections.emptyList();
     }
 
     @Override
-    public List<String> visitFloat(float f, String s) {
+    public List<String> visitFloat(float f, Void unused) {
         return Collections.emptyList();
     }
 
     @Override
-    public List<String> visitInt(int i, String s) {
+    public List<String> visitInt(int i, Void unused) {
         return Collections.emptyList();
     }
 
     @Override
-    public List<String> visitLong(long i, String s) {
+    public List<String> visitLong(long i, Void unused) {
         return Collections.emptyList();
     }
 
     @Override
-    public List<String> visitShort(short s, String s2) {
+    public List<String> visitShort(short s, Void unused) {
         return Collections.emptyList();
     }
 
     @Override
-    public List<String> visitString(String s, String s2) {
+    public List<String> visitString(String s, Void unused) {
         return Collections.emptyList();
     }
 
     @Override
-    public List<String> visitType(TypeMirror t, String s) {
+    public List<String> visitType(TypeMirror t, Void unused) {
         return Collections.emptyList();
     }
 
     @Override
-    public List<String> visitEnumConstant(VariableElement c, String s) {
+    public List<String> visitEnumConstant(VariableElement c, Void unused) {
         return Collections.emptyList();
     }
 
     @Override
-    public List<String> visitAnnotation(AnnotationMirror a, String s) {
+    public List<String> visitAnnotation(AnnotationMirror a, Void unused) {
         if (a.getAnnotationType().asElement().getSimpleName().contentEquals(annotationName)) {
             return a.getElementValues().entrySet().stream()
                     .filter(e -> e.getKey().getSimpleName().contentEquals(annotationFieldName))
@@ -104,12 +104,12 @@ final class AnnotationTypeFieldVisitor implements AnnotationValueVisitor<List<St
     }
 
     @Override
-    public List<String> visitArray(List<? extends AnnotationValue> vals, String s) {
+    public List<String> visitArray(List<? extends AnnotationValue> vals, Void unused) {
         return Collections.emptyList();
     }
 
     @Override
-    public List<String> visitUnknown(AnnotationValue av, String s) {
+    public List<String> visitUnknown(AnnotationValue av, Void unused) {
         return Collections.emptyList();
     }
 }

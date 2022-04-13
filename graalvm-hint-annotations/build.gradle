@@ -6,7 +6,7 @@ publishing {
             pom {
                 name = "GraalVM Hint Annotations"
                 url = "https://github.com/GoodforGod/$artifactRootId"
-                description = "GraalVM Hint Annotations helps marking GraalVM hints for GraalVM Hint Processor."
+                description = "Annotations that help marking GraalVM native-image hints for GraalVM Hint Processor."
 
                 license {
                     name = "Apache License 2.0"

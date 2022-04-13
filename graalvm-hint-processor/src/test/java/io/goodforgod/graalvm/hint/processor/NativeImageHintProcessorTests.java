@@ -23,7 +23,7 @@ class NativeImageHintProcessorTests extends ProcessorRunner {
         CompilationSubject.assertThat(compilation).succeeded();
         CompilationSubject.assertThat(compilation)
                 .generatedFile(StandardLocation.CLASS_OUTPUT,
-                        "META-INF/native-image/io.goodforgod.graalvm.hint/processor/native-image.properties")
+                        "META-INF/native-image/io.goodforgod.graalvm.hint.processor/hint/native-image.properties")
                 .contentsAsString(StandardCharsets.UTF_8)
                 .isEqualTo(getResourceContentAsString("nativeimagehint/generated/native-image-only.properties"));
     }
@@ -38,7 +38,7 @@ class NativeImageHintProcessorTests extends ProcessorRunner {
         CompilationSubject.assertThat(compilation).succeeded();
         CompilationSubject.assertThat(compilation)
                 .generatedFile(StandardLocation.CLASS_OUTPUT,
-                        "META-INF/native-image/io.goodforgod.graalvm.hint/processor/native-image.properties")
+                        "META-INF/native-image/io.goodforgod.graalvm.hint.processor/hint/native-image.properties")
                 .contentsAsString(StandardCharsets.UTF_8)
                 .isEqualTo(getResourceContentAsString("nativeimagehint/generated/native-image.properties"));
     }

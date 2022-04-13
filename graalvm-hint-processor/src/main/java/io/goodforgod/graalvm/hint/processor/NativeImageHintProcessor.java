@@ -1,199 +1,86 @@
 package io.goodforgod.graalvm.hint.processor;
 
-import io.goodforgod.graalvm.hint.annotation.*;
-import java.util.*;
+import io.goodforgod.graalvm.hint.annotation.DynamicProxyHint;
+import io.goodforgod.graalvm.hint.annotation.InitializationHint;
+import io.goodforgod.graalvm.hint.annotation.InitializationHints;
+import io.goodforgod.graalvm.hint.annotation.NativeImageHint;
+import java.lang.annotation.Annotation;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
-import javax.annotation.processing.SupportedOptions;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic;
 
 /**
- * Processes {@link NativeImageHint} and {@link InitializationHint} annotations for
+ * Processes {@link NativeImageHint} and {@link InitializationHint} and {@link DynamicProxyHint}
+ * annotations for
  * native-image.properties file
  *
  * @author Anton Kurako (GoodforGod)
+ * @see DynamicProxyHint
  * @see NativeImageHint
  * @see InitializationHint
  * @since 30.09.2021
  */
-@SupportedAnnotationTypes({
-        "io.goodforgod.graalvm.hint.annotation.NativeImageHint",
-        "io.goodforgod.graalvm.hint.annotation.InitializationHint",
-        "io.goodforgod.graalvm.hint.annotation.InitializationHints"
-})
-@SupportedOptions({
-        HintOptions.HINT_PROCESSING_GROUP,
-        HintOptions.HINT_PROCESSING_ARTIFACT
-})
 public final class NativeImageHintProcessor extends AbstractHintProcessor {
 
-    private static final String ENTRY_POINT_DEFAULT_VALUE = Void.class.getSimpleName();
     private static final String FILE_NAME = "native-image.properties";
-
-    private static final String INIT_BUILD_TIME = "--initialize-at-build-time=";
-    private static final String INIT_RUNTIME_TIME = "--initialize-at-run-time=";
-
     private static final String ARG_SEPARATOR = " \\\n       ";
 
-    static class Entrypoint {
+    private static final NativeImageHintParser NATIVE_IMAGE_HINT_PARSER = new NativeImageHintParser();
+    private static final InitializationHintParser INITIALIZATION_HINT_PARSER = new InitializationHintParser();
+    private static final DynamicProxyHintParser DYNAMIC_PROXY_HINT_PARSER = new DynamicProxyHintParser();
 
-        private final String className;
-        private final NativeImageHint hint;
+    private static final List<OptionParser> OPTION_PARSERS = List.of(
+            NATIVE_IMAGE_HINT_PARSER,
+            INITIALIZATION_HINT_PARSER,
+            DYNAMIC_PROXY_HINT_PARSER);
 
-        private Entrypoint(String className, NativeImageHint hint) {
-            this.className = className;
-            this.hint = hint;
-        }
-    }
-
-    static class Initialization implements Comparable<Initialization> {
-
-        private final InitializationHint.InitPhase phase;
-        private final String className;
-
-        Initialization(InitializationHint.InitPhase phase, String className) {
-            this.phase = phase;
-            this.className = className;
-        }
-
-        @Override
-        public int compareTo(Initialization o) {
-            return className.compareTo(o.className);
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o)
-                return true;
-            if (o == null || getClass() != o.getClass())
-                return false;
-            Initialization that = (Initialization) o;
-            return Objects.equals(className, that.className);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(className);
-        }
+    @Override
+    protected Set<Class<? extends Annotation>> getSupportedAnnotations() {
+        return Set.of(
+                DynamicProxyHint.class,
+                NativeImageHint.class,
+                InitializationHint.class,
+                InitializationHints.class);
     }
 
     @Override
-    public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        if (annotations.isEmpty()) {
+    public boolean process(Set<? extends TypeElement> annotatedElements, RoundEnvironment roundEnv) {
+        if (annotatedElements.isEmpty()) {
             return false;
         }
 
         try {
-            final Set<? extends Element> annotatedNative = roundEnv.getElementsAnnotatedWith(NativeImageHint.class);
-            final Set<TypeElement> typesNative = ElementFilter.typesIn(annotatedNative);
-            final List<String> nativeImageHintOptions = getNativeImageHintProperties(typesNative);
+            final List<String> options = OPTION_PARSERS.stream()
+                    .flatMap(parser -> parser.getOptions(roundEnv, processingEnv).stream())
+                    .collect(Collectors.toList());
 
-            final Set<TypeElement> typesInits = getAnnotatedElements(roundEnv, InitializationHint.class,
-                    InitializationHints.class);
-            final List<String> initializationHintOptions = getInitializationHintProperties(typesInits);
+            if (options.isEmpty()) {
+                final String annotations = OPTION_PARSERS.stream()
+                        .flatMap(p -> p.getSupportedAnnotations().stream()
+                                .filter(a -> !roundEnv.getElementsAnnotatedWith(a).isEmpty()))
+                        .map(Class::getSimpleName)
+                        .collect(Collectors.joining(","));
 
-            final String nativeImageProperties = Stream.of(nativeImageHintOptions, initializationHintOptions)
-                    .flatMap(Collection::stream)
-                    .collect(Collectors.joining(ARG_SEPARATOR, "Args = ", ""));
-
-            if (nativeImageProperties.isEmpty() && initializationHintOptions.isEmpty()) {
-                processingEnv.getMessager().printMessage(Diagnostic.Kind.MANDATORY_WARNING,
-                        typesNative.size() + " annotations @NativeImageHint are present but not Options or Entrypoint found!");
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING,
+                        annotations + " are present but no options retrieved");
                 return false;
             } else {
-                return writeConfigFile(FILE_NAME, nativeImageProperties, roundEnv);
+                final String nativeImageProperties = options.stream()
+                        .collect(Collectors.joining(ARG_SEPARATOR, "Args = ", ""));
+
+                final HintOrigin origin = HintUtils.getHintOrigin(roundEnv, processingEnv);
+                final String filePath = origin.getRelativePathForFile(FILE_NAME);
+                return HintUtils.writeConfigFile(filePath, nativeImageProperties, processingEnv);
             }
+        } catch (HintException e) {
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, e.getMessage());
+            return false;
         } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
-    }
-
-    private List<String> getNativeImageHintProperties(Set<TypeElement> elements) {
-        final List<Entrypoint> entrypoints = elements.stream()
-                .map(t -> getAnnotationFieldClassNameAny(t, NativeImageHint.class, "entrypoint")
-                        .filter(name -> !ENTRY_POINT_DEFAULT_VALUE.equals(name))
-                        .map(name -> new Entrypoint(name, t.getAnnotation(NativeImageHint.class)))
-                        .orElse(null))
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
-
-        if (entrypoints.size() > 1) {
-            throw new IllegalStateException("@NativeImageHint multiple entrypoint detected with values: " + entrypoints);
-        }
-
-        final Optional<Entrypoint> entryClassName = entrypoints.stream().findFirst();
-        final List<String> options = elements.stream()
-                .map(element -> element.getAnnotation(NativeImageHint.class))
-                .flatMap(hint -> Stream
-                        .concat(Arrays.stream(hint.options()).map(NativeImageOptions::option), Arrays.stream(hint.optionNames()))
-                        .distinct())
-                .collect(Collectors.toList());
-
-        return entryClassName
-                .map(entry -> {
-                    final List<String> entryOptions = getEntrypointOptions(entry);
-                    return Stream.of(entryOptions, options)
-                            .flatMap(Collection::stream)
-                            .distinct()
-                            .collect(Collectors.toList());
-                })
-                .orElse(options);
-    }
-
-    private List<String> getEntrypointOptions(Entrypoint entrypoint) {
-        return (entrypoint.hint.name().isBlank())
-                ? List.of("-H:Class=" + entrypoint.className)
-                : List.of("-H:Name=" + entrypoint.hint.name() + " -H:Class=" + entrypoint.className);
-    }
-
-    private List<String> getInitializationHintProperties(Set<TypeElement> elements) {
-        final Map<InitializationHint.InitPhase, List<Initialization>> groupedInitializationOptions = elements.stream()
-                .flatMap(e -> {
-                    final InitializationHints hints = e.getAnnotation(InitializationHints.class);
-                    if (hints == null) {
-                        final InitializationHint hint = e.getAnnotation(InitializationHint.class);
-                        return getInitialization(e, hint, false);
-                    } else {
-                        return Arrays.stream(hints.value())
-                                .flatMap(h -> getInitialization(e, h, true));
-                    }
-                })
-                .distinct()
-                .collect(Collectors.groupingBy(e -> e.phase));
-
-        return groupedInitializationOptions.entrySet().stream()
-                .map(e -> e.getValue().stream()
-                        .sorted()
-                        .map(i -> i.className)
-                        .collect(Collectors.joining(",", getInitializationArgumentName(e.getKey()), "")))
-                .sorted()
-                .collect(Collectors.toList());
-    }
-
-    private Stream<Initialization> getInitialization(TypeElement element, InitializationHint hint, boolean isParentAnnotation) {
-        final List<String> types = (isParentAnnotation)
-                ? getAnnotationFieldClassNames(element, InitializationHint.class, "types", InitializationHints.class)
-                : getAnnotationFieldClassNames(element, InitializationHint.class, "types");
-
-        final List<String> typeNames = Arrays.asList(hint.typeNames());
-        if (types.isEmpty() && typeNames.isEmpty()) {
-            return Stream.of(new Initialization(hint.value(), element.getQualifiedName().toString()));
-        } else {
-            return Stream.of(types, typeNames)
-                    .flatMap(Collection::stream)
-                    .map(type -> new Initialization(hint.value(), type));
-        }
-    }
-
-    private String getInitializationArgumentName(InitializationHint.InitPhase phase) {
-        return (InitializationHint.InitPhase.BUILD.equals(phase))
-                ? INIT_BUILD_TIME
-                : INIT_RUNTIME_TIME;
     }
 }
