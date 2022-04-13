@@ -37,12 +37,12 @@ public @interface DynamicProxyHint {
     Configuration[] value() default {};
 
     /**
-     * @return file configs to include under DynamicProxyConfigurationFiles option
+     * @return file configs to include under -H:DynamicProxyConfigurationFiles option
      */
     String[] files() default {};
 
     /**
-     * @return resources configs to include under DynamicProxyConfigurationResources option
+     * @return resources configs to include under -H:DynamicProxyConfigurationResources option
      */
     String[] resources() default {};
 }

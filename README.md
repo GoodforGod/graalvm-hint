@@ -15,6 +15,7 @@ Features:
 - Generate Resource Hints ([resource-config.json](#resourcehint))
 - Generate Options hints ([native-image.properties](#nativeimagehint))
 - Generate Initialization Hints ([native-image.properties](#initializationhint))
+- Generate Dynamic Proxy Hints ([dynamic-proxy-hint.json](#dynamicproxyhint))
 - Generate JNI Hints ([jni-config.json](#jnihint))
 
 ## Dependency :rocket:
@@ -23,8 +24,8 @@ Java 11+ is supported.
 
 [**Gradle**](https://mvnrepository.com/artifact/io.goodforgod/graalvm-hint-processor)
 ```groovy
-annotationProcessor "io.goodforgod:graalvm-hint-processor:0.17.1"
-compilyOnly "io.goodforgod:graalvm-hint-annotations:0.17.1"
+annotationProcessor "io.goodforgod:graalvm-hint-processor:0.18.0"
+compilyOnly "io.goodforgod:graalvm-hint-annotations:0.18.0"
 ```
 
 [**Maven**](https://mvnrepository.com/artifact/io.goodforgod/graalvm-hint-processor)
@@ -33,14 +34,14 @@ compilyOnly "io.goodforgod:graalvm-hint-annotations:0.17.1"
     <dependency>
         <groupId>io.goodforgod</groupId>
         <artifactId>graalvm-hint-annotations</artifactId>
-        <version>0.17.1</version>
+        <version>0.18.0</version>
         <scope>compile</scope>
         <optional>true</optional>
     </dependency>
     <dependency>
         <groupId>io.goodforgod</groupId>
         <artifactId>graalvm-hint-processor</artifactId>
-        <version>0.17.1</version>
+        <version>0.18.0</version>
         <scope>provided</scope>
     </dependency>
 </dependencies>
@@ -58,7 +59,7 @@ compilyOnly "io.goodforgod:graalvm-hint-annotations:0.17.1"
                     <path>
                         <groupId>io.goodforgod</groupId>
                         <artifactId>graalvm-hint-processor</artifactId>
-                        <version>0.17.1</version>
+                        <version>0.18.0</version>
                     </path>
                 </annotationProcessorPaths>
             </configuration>
@@ -67,13 +68,9 @@ compilyOnly "io.goodforgod:graalvm-hint-annotations:0.17.1"
 </build>
 ```
 
-## Examples
+## ReflectionHint
 
-Below are illustrated examples for usage of such library.
-
-### ReflectionHint
-
-You can read more about GraalVM reflection configuration [here](https://www.graalvm.org/reference-manual/native-image/Reflection/).
+You can read more about GraalVM reflection configuration [in official documentation here](https://www.graalvm.org/reference-manual/native-image/Reflection/).
 
 There are available access hints:
 - allPublicFields
@@ -94,7 +91,7 @@ public class RequestOnly {
 }
 ```
 
-Generated reflection config:
+Generated *reflection-config.json*:
 ```json
 [{
   "name": "io.goodforgod.graalvm.hint.processor.RequestOnly",
@@ -116,7 +113,7 @@ public class ReflectionConfig {
 }
 ```
 
-Resulted reflection-config.json:
+Generated *reflection-config.json*:
 ```json
 [{
   "name": "io.goodforgod.graalvm.hint.processor",
@@ -134,9 +131,9 @@ Resulted reflection-config.json:
 }]
 ```
 
-### ResourceHint
+## ResourceHint
 
-You can read more about GraalVM resource configuration [here](https://www.graalvm.org/reference-manual/native-image/Resources/).
+You can read more about GraalVM resource configuration [in official documentation here](https://www.graalvm.org/reference-manual/native-image/Resources/).
 
 Hint allows generating config for resource files to be included/excluded when building native application.
 You can also include bundles into native image using this Hint.
@@ -149,7 +146,7 @@ public class ResourceNames {
 }
 ```
 
-Resulted resource-config.json:
+Generated *resource-config.json*:
 ```json
 {
   "resources": {
@@ -170,7 +167,7 @@ public class ResourceNames {
 }
 ```
 
-Resulted resource-config.json:
+Generated *resource-config.json*:
 ```json
 {
   "resources": {
@@ -189,7 +186,7 @@ public class ResourceNames {
 }
 ```
 
-Resulted resource-config.json:
+Generated *resource-config.json*:
 ```json
 {
   "bundles": [
@@ -198,9 +195,9 @@ Resulted resource-config.json:
 }
 ```
 
-### NativeImageHint
+## NativeImageHint
 
-You can read more about GraalVM native-image options [here](https://www.graalvm.org/reference-manual/native-image/Options/).
+You can read more about GraalVM native-image options [in official documentation here](https://www.graalvm.org/reference-manual/native-image/Options/).
 
 Hint allows generating config for native-image options and initial application entrypoint.
 
@@ -213,7 +210,7 @@ public class EntrypointOnly {
 }
 ```
 
-Resulted native-image.properties:
+Generated *native-image.properties*:
 ```properties
 Args = -H:Class=io.goodforgod.graalvm.hint.processor.EntrypointOnly
 ```
@@ -227,16 +224,16 @@ public class Entrypoint {
 }
 ```
 
-Resulted native-image.properties:
+Generated *native-image.properties*:
 ```properties
 Args = -H:Class=io.goodforgod.graalvm.hint.processor.Entrypoint -H:Name=myapp \
        -H:+PrintClassInitialization \
        -H:+InlineBeforeAnalysis
 ```
 
-### InitializationHint
+## InitializationHint
 
-You can read more about GraalVM initialization configuration [here](https://www.graalvm.org/reference-manual/native-image/ClassInitialization/).
+You can read more about GraalVM initialization configuration [in official documentation here](https://www.graalvm.org/reference-manual/native-image/ClassInitialization/).
 
 Hint allows generating config for what classes to instantiate in runtime and what classes to instantiate in compile time.
 
@@ -249,7 +246,7 @@ public class EntrypointOnly {
 }
 ```
 
-Resulted native-image.properties:
+Generated *native-image.properties*:
 ```properties
 Args = --initialize-at-build-time=io.goodforgod.graalvm.hint.processor.HintOrigin.class \
        --initialize-at-run-time=io.goodforgod.graalvm.hint.processor
@@ -266,16 +263,59 @@ public class Entrypoint {
 }
 ```
 
-Resulted native-image.properties:
+Generated *native-image.properties*:
 ```properties
 Args = -H:Class=io.goodforgod.graalvm.hint.processor.Entrypoint \
        --initialize-at-build-time=io.goodforgod.graalvm.hint.processor.HintOrigin.class \
        --initialize-at-run-time=io.goodforgod.graalvm.hint.processor
 ```
 
-### JniHint
+## DynamicProxyHint
 
-You can read more about GraalVM JNI configuration [here](https://www.graalvm.org/reference-manual/native-image/JNI/).
+You can read more about GraalVM DynamicProxyHint configuration [in official documentation here](https://www.graalvm.org/reference-manual/native-image/DynamicProxy/).
+
+Use can pass dynamic proxy resources (*-H:DynamicProxyConfigurationResources*) or files (*-H:DynamicProxyConfigurationFiles*) using corresponding options:
+```java
+@DynamicProxyHint(resources = {"proxy-resource.json"}, files = {"proxy-file.json"})
+public class Resource {
+
+}
+```
+
+Generated *native-image.properties*:
+```properties
+Args = -H:DynamicProxyConfigurationFiles=proxy-file.json \
+       -H:DynamicProxyConfigurationResources=proxy-resource.json
+```
+
+You can configure files yourself using annotations only without the need for manually creating JSON configurations.
+
+```java
+@DynamicProxyHint(value = {
+        @DynamicProxyHint.Configuration(interfaces = {OptionParser.class, HintOrigin.class}),
+        @DynamicProxyHint.Configuration(interfaces = {HintOrigin.class})
+})
+public class Config {
+
+}
+```
+
+Generated *dynamic-proxy-hint-config.json*:
+```json
+[
+  { "interfaces": [ "io.goodforgod.graalvm.hint.processor.OptionParser", "io.goodforgod.graalvm.hint.processor.HintOrigin" ] },
+  { "interfaces": [ "io.goodforgod.graalvm.hint.processor.HintOrigin" ] }
+]
+```
+
+Generated *native-image.properties*:
+```properties
+Args = -H:DynamicProxyConfigurationResources=META-INF/native-image/io.goodforgod.graalvm.hint.processor/hint/dynamic-proxy-config.json
+```
+
+## JniHint
+
+You can read more about GraalVM JNI configuration [in official documentation here](https://www.graalvm.org/reference-manual/native-image/JNI/).
 
 There are available JNI access hints:
 - allPublicFields
@@ -294,7 +334,7 @@ public class RequestOnly {
 }
 ```
 
-Generated JNI config:
+Generated *jni-config.json*:
 ```json
 [{
   "name": "io.goodforgod.graalvm.hint.processor.RequestOnly",
@@ -315,7 +355,7 @@ public final class JniConfig {
 }
 ```
 
-Resulted jni-config.json:
+Generated *jni-config.json*:
 ```json
 [{
   "name": "io.goodforgod.graalvm.hint.processor",
