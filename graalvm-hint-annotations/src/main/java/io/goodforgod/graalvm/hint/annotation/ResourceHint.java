@@ -24,16 +24,16 @@ public @interface ResourceHint {
      * time.
      * Example: @ResourceHint(include = { "simplelogger.properties", ".*yaml" })
      *
-     * @return resource patterns specified with Java regexp to Include during the generation into the
-     *             final image.
+     * @return resource patterns specified with Java regexp to Include during native-image generation
+     *             into the final application.
      */
     String[] include() default {};
 
     /**
      * Example: @ResourceHint(exclude = { "simplelogger.properties", ".*yaml" })
      *
-     * @return resource patterns specified with Java regexp to Exclude during the generation into the
-     *             final image.
+     * @return resource patterns specified with Java regexp to Exclude during native-image generation
+     *             into the final application.
      */
     String[] exclude() default {};
 
@@ -43,7 +43,7 @@ public @interface ResourceHint {
      * etc.
      * Example: @ResourceHint(bundles = { "your.pkg.Bundle", "another.pkg.Resource" })
      *
-     * @return bundle names to include during the generation into the final image.
+     * @return bundle names to include during native-image generation into the final application.
      */
     String[] bundles() default {};
 }

@@ -72,28 +72,30 @@ abstract class AbstractAccessHintProcessor extends AbstractHintProcessor {
     }
 
     protected Predicate<AnnotationValue> getParentAnnotationPredicate(ReflectionHint.AccessType[] accessTypes) {
-        return a -> ((AnnotationMirror) a).getElementValues().entrySet().stream()
-                .filter(e -> e.getKey().getSimpleName().contentEquals("value"))
-                .anyMatch(e -> {
-                    final Object value = e.getValue().getValue();
-                    final List<String> accessTypesReflection = (value instanceof Collection)
-                            ? ((Collection<?>) value).stream()
-                                    .map(attr -> {
-                                        // Java 11 and Java 17 behave differently (different impls)
-                                        final String attrValue = attr.toString();
-                                        final int classStartIndex = attrValue.lastIndexOf('.');
-                                        return (classStartIndex == -1)
-                                                ? attrValue
-                                                : attrValue.substring(classStartIndex + 1);
-                                    }).collect(Collectors.toList())
-                            : List.of(value.toString());
+        return a -> {
+            final List<String> accessTypeNames = Arrays.stream(accessTypes)
+                    .map(Enum::name)
+                    .collect(Collectors.toList());
 
-                    final List<String> accessTypeNames = Arrays.stream(accessTypes)
-                            .map(Enum::name)
-                            .collect(Collectors.toList());
+            return ((AnnotationMirror) a).getElementValues().entrySet().stream()
+                    .filter(e -> e.getKey().getSimpleName().contentEquals("value"))
+                    .anyMatch(entry -> {
+                        final Object value = entry.getValue().getValue();
+                        final List<String> annotationAccessTypes = (value instanceof Collection)
+                                ? ((Collection<?>) value).stream()
+                                        .map(attr -> {
+                                            // Java 11 and Java 17 behave differently (different impls)
+                                            final String attrValue = attr.toString();
+                                            final int classStartIndex = attrValue.lastIndexOf('.');
+                                            return (classStartIndex == -1)
+                                                    ? attrValue
+                                                    : attrValue.substring(classStartIndex + 1);
+                                        }).collect(Collectors.toList())
+                                : List.of(value.toString());
 
-                    return accessTypesReflection.equals(accessTypeNames);
-                });
+                        return annotationAccessTypes.equals(accessTypeNames);
+                    });
+        };
     }
 
     @Override
@@ -122,6 +124,7 @@ abstract class AbstractAccessHintProcessor extends AbstractHintProcessor {
 
     private String getAccessConfigJson(Collection<Access> accesses) {
         return accesses.stream()
+                .sorted(Comparator.comparing(a -> a.typeName))
                 .map(AbstractAccessHintProcessor::getGraalReflectionForTypeName)
                 .map(AbstractAccessHintProcessor::mapToJson)
                 .collect(Collectors.joining(",\n", "[", "]"));
