@@ -16,24 +16,24 @@ import java.lang.annotation.Target;
 public @interface NativeImageHint {
 
     /**
-     * @return class that is entrypoint for application with main() method
+     * @return class that is entrypoint for native application with main() method.
      */
     Class<?> entrypoint() default Void.class;
 
     /**
-     * @return name of application after native-image generation
+     * @return final name of native application after native-image generation.
      */
     String name() default "";
 
     /**
-     * @return additional options to include for configuring native-image
+     * @return additional options to include for native-image.properties file
      */
     NativeImageOptions[] options() default {};
 
     /**
      * @see #options()
-     * @return additional options to include for configuring native-image as string for some
-     *             non-standard options
+     * @return additional options to include for native-image.properties file as string for some
+     *             non-standard options.
      */
     String[] optionNames() default {};
 }

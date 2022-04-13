@@ -63,10 +63,10 @@ final class HintUtils {
                                                      Class<? extends Annotation> annotation,
                                                      String annotationFieldName) {
         final String annotationName = annotation.getSimpleName();
-        final AnnotationTypeFieldVisitor visitor = new AnnotationTypeFieldVisitor(annotationName, annotationFieldName);
         return type.getAnnotationMirrors().stream()
                 .filter(a -> a.getAnnotationType().asElement().getSimpleName().contentEquals(annotationName))
-                .flatMap(a -> visitor.visitAnnotation(a, null).stream())
+                .flatMap(a -> new AnnotationTypeFieldVisitor(annotationName, annotationFieldName).visitAnnotation(a, null)
+                        .stream())
                 .collect(Collectors.toList());
     }
 
@@ -94,16 +94,16 @@ final class HintUtils {
                                                      Predicate<ExecutableElement> parentAnnotationKeyPredicate) {
         final String annotationName = annotation.getSimpleName();
         final String annotationParent = parentAnnotation.getSimpleName();
-        final AnnotationTypeFieldVisitor visitor = new AnnotationTypeFieldVisitor(annotationName, annotationFieldName);
         return type.getAnnotationMirrors().stream()
-                .filter(a -> a.getAnnotationType().asElement().getSimpleName().contentEquals(annotationParent))
-                .flatMap(a -> a.getElementValues().entrySet().stream()
+                .filter(pa -> pa.getAnnotationType().asElement().getSimpleName().contentEquals(annotationParent))
+                .flatMap(pa -> pa.getElementValues().entrySet().stream()
                         .filter(e -> parentAnnotationKeyPredicate.test(e.getKey()))
-                        .flatMap(e -> ((List<?>) e.getValue().getValue()).stream()
-                                .filter(an -> annotationPredicate.test(((AnnotationValue) an)))
-                                .flatMap(an -> ((AnnotationValue) an).accept(visitor, null).stream()))
-                        .map(Object::toString)
-                        .filter(e -> !e.isBlank()))
+                        .flatMap(e -> ((List<?>) e.getValue().getValue()).stream())
+                        .filter(a -> annotationPredicate.test(((AnnotationValue) a)))
+                        .flatMap(a -> ((AnnotationValue) a)
+                                .accept(new AnnotationTypeFieldVisitor(annotationName, annotationFieldName), null).stream()))
+                .map(Object::toString)
+                .filter(e -> !e.isBlank())
                 .collect(Collectors.toList());
     }
 
