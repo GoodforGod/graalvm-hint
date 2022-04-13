@@ -91,6 +91,7 @@ final class DynamicProxyHintParser implements OptionParser {
     private List<Configuration> getDynamicProxyConfigurations(TypeElement element) {
         final String annotationName = DynamicProxyHint.Configuration.class.getSimpleName();
         final String annotationParent = DynamicProxyHint.class.getSimpleName();
+        final String elementName = element.getQualifiedName().toString();
         final AnnotationTypeFieldVisitor visitor = new AnnotationTypeFieldVisitor(annotationName, "interfaces");
         final List<Configuration> interfaceConfigurations = element.getAnnotationMirrors().stream()
                 .filter(a -> a.getAnnotationType().asElement().getSimpleName().contentEquals(annotationParent))
@@ -108,9 +109,9 @@ final class DynamicProxyHintParser implements OptionParser {
 
         if (interfaceConfigurations.isEmpty() && isSelfConfiguration(element)) {
             if (element.getKind().isInterface()) {
-                interfaceConfigurations.add(new Configuration(List.of(element.getQualifiedName().toString())));
+                interfaceConfigurations.add(new Configuration(List.of(elementName)));
             } else {
-                throw new HintException(element.getQualifiedName().toString() + " is annotated with @"
+                throw new HintException(elementName + " is annotated with @"
                         + DynamicProxyHint.class.getSimpleName() + " hint but is not an interface");
             }
         }

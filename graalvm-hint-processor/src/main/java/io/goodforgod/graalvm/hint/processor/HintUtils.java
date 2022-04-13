@@ -29,7 +29,7 @@ final class HintUtils {
 
         final String group = (options.containsKey(HintOrigin.HINT_PROCESSING_GROUP))
                 ? options.get(HintOrigin.HINT_PROCESSING_GROUP)
-                : getPackage(anyElement);
+                : getPackage(processingEnv, anyElement);
 
         final String artifact = (options.containsKey(HintOrigin.HINT_PROCESSING_ARTIFACT))
                 ? options.get(HintOrigin.HINT_PROCESSING_ARTIFACT)
@@ -123,13 +123,18 @@ final class HintUtils {
         return true;
     }
 
-    private static String getPackage(Element element) {
-        final Element enclosingElement = element.getEnclosingElement();
-        if (enclosingElement instanceof PackageElement) {
-            return ((PackageElement) enclosingElement).getQualifiedName().toString();
+    private static String getPackage(ProcessingEnvironment processingEnv, Element element) {
+        final PackageElement packageElement = processingEnv.getElementUtils().getPackageOf(element);
+        if (packageElement == null || packageElement.isUnnamed()) {
+            return HintOrigin.DEFAULT_PACKAGE;
         }
 
-        return HintOrigin.DEFAULT_PACKAGE;
+        final String packageName = packageElement.getQualifiedName().toString();
+        if (packageName.isEmpty()) {
+            return HintOrigin.DEFAULT_PACKAGE;
+        }
+
+        return packageName;
     }
 
     private static String getArtifact(Element element) {
