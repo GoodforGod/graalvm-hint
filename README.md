@@ -233,7 +233,7 @@ Generated *native-image.properties*:
 Args = -H:Class=io.goodforgod.graalvm.hint.processor.EntrypointOnly
 ```
 
-### Complex Options
+### Entrypoint name & Options
 
 Complex hint configuration with options:
 ```java
@@ -274,47 +274,19 @@ Args = --initialize-at-build-time=io.goodforgod.graalvm.hint.processor.HintOrigi
        --initialize-at-run-time=io.goodforgod.graalvm.hint.processor
 ```
 
-### Entrypoint and Initialization
-
-`@NativeImageHint` and `@InitializationHint` can annotate different classes, it doesn't matter.
-
-Options and initialization hint configuration:
-```java
-@NativeImageHint(entrypoint = Entrypoint.class)
-@InitializationHint(value = InitializationHint.InitPhase.BUILD, types = HintOptions.class)
-@InitializationHint(value = InitializationHint.InitPhase.RUNTIME, typeNames = "io.goodforgod.graalvm.hint.processor")
-public class Entrypoint {
-
-    public static void main(String[] args) {}
-}
-```
-
-Generated *native-image.properties*:
-```properties
-Args = -H:Class=io.goodforgod.graalvm.hint.processor.Entrypoint \
-       --initialize-at-build-time=io.goodforgod.graalvm.hint.processor.HintOrigin.class \
-       --initialize-at-run-time=io.goodforgod.graalvm.hint.processor
-```
-
 ### Self Configuration
 
 Simple case for single Java class:
 ```java
-@ReflectionHint
-public class RequestOnly {
+@InitializationHint
+public class Self {
 
-    private String name;
 }
 ```
 
-Generated *reflection-config.json*:
+Generated *native-image.properties*:
 ```json
-[{
-  "name": "io.goodforgod.graalvm.hint.processor.RequestOnly",
-  "allDeclaredConstructors": true,
-  "allDeclaredFields": true,
-  "allDeclaredMethods": true
-}]
+Args = --initialize-at-build-time=io.goodforgod.graalvm.hint.processor.Self
 ```
 
 ## DynamicProxyHint
