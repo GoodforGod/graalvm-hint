@@ -68,7 +68,7 @@ compilyOnly "io.goodforgod:graalvm-hint-annotations:0.18.1"
 </build>
 ```
 
-## ReflectionHint
+## @ReflectionHint
 
 You can read more about GraalVM reflection configuration [in official documentation here](https://www.graalvm.org/reference-manual/native-image/Reflection/).
 
@@ -135,7 +135,7 @@ Generated *reflection-config.json*:
 }]
 ```
 
-## ResourceHint
+## @ResourceHint
 
 You can read more about GraalVM resource configuration [in official documentation here](https://www.graalvm.org/reference-manual/native-image/Resources/).
 
@@ -211,7 +211,7 @@ Generated *resource-config.json*:
 }
 ```
 
-## NativeImageHint
+## @NativeImageHint
 
 You can read more about GraalVM native-image options [in official documentation here](https://www.graalvm.org/reference-manual/native-image/Options/).
 
@@ -251,7 +251,7 @@ Args = -H:Class=io.goodforgod.graalvm.hint.processor.Entrypoint -H:Name=myapp \
        -H:+InlineBeforeAnalysis
 ```
 
-## InitializationHint
+## @InitializationHint
 
 You can read more about GraalVM initialization configuration [in official documentation here](https://www.graalvm.org/reference-manual/native-image/ClassInitialization/).
 
@@ -285,11 +285,11 @@ public class Self {
 ```
 
 Generated *native-image.properties*:
-```json
+```properties
 Args = --initialize-at-build-time=io.goodforgod.graalvm.hint.processor.Self
 ```
 
-## DynamicProxyHint
+## @DynamicProxyHint
 
 You can read more about GraalVM DynamicProxyHint configuration [in official documentation here](https://www.graalvm.org/reference-manual/native-image/DynamicProxy/).
 
@@ -357,7 +357,7 @@ Generated *native-image.properties*:
 Args = -H:DynamicProxyConfigurationResources=META-INF/native-image/io.goodforgod.graalvm.hint.processor/hint/dynamic-proxy-config.json
 ```
 
-## JniHint
+## @JniHint
 
 You can read more about GraalVM JNI configuration [in official documentation here](https://www.graalvm.org/reference-manual/native-image/JNI/).
 
