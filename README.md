@@ -30,7 +30,7 @@ compilyOnly "io.goodforgod:graalvm-hint-annotations:0.18.1"
 
 [**Maven**](https://mvnrepository.com/artifact/io.goodforgod/graalvm-hint-processor)
 ```xml
-<dependency>
+<dependencies>
     <dependency>
         <groupId>io.goodforgod</groupId>
         <artifactId>graalvm-hint-annotations</artifactId>
