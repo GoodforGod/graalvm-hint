@@ -13,10 +13,11 @@ Fully AOT processing library, no dependencies, no runtime side-affects.
 Features:
 - Generate Reflection Hints ([reflect-config.json](#reflectionhint))
 - Generate Resource Hints ([resource-config.json](#resourcehint))
-- Generate Options hints ([native-image.properties](#nativeimagehint))
+- Generate Options Hints ([native-image.properties](#nativeimagehint))
 - Generate Initialization Hints ([native-image.properties](#initializationhint))
 - Generate Dynamic Proxy Hints ([dynamic-proxy-hint.json](#dynamicproxyhint))
 - Generate JNI Hints ([jni-config.json](#jnihint))
+- Generate Link Build Hints ([native-image.properties](#jnihint))
 
 ## Dependency :rocket:
 
@@ -372,6 +373,8 @@ Generated *jni-config.json*:
   "allDeclaredFields": true
 }]
 ```
+
+## LinkHint
 
 ## License
 
