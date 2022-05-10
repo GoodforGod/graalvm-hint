@@ -4,6 +4,7 @@ import java.lang.annotation.*;
 
 /**
  * Indicate which types to be fully defined at image build-time.
+ * Option --link-at-build-time.
  *
  * @see <a href=
  *          "https://www.graalvm.org/22.1/reference-manual/native-image/Options/#options-to-native-image-builder">GraalVM
@@ -18,6 +19,7 @@ public @interface LinkHint {
 
     /**
      * @return true if all classes in scope of the option are required to be fully defined.
+     *             (--link-at-build-time)
      */
     boolean all() default false;
 

@@ -65,8 +65,7 @@ final class HintUtils {
         final String annotationName = annotation.getSimpleName();
         return type.getAnnotationMirrors().stream()
                 .filter(a -> a.getAnnotationType().asElement().getSimpleName().contentEquals(annotationName))
-                .flatMap(a -> new AnnotationTypeFieldVisitor(annotationName, annotationFieldName).visitAnnotation(a, null)
-                        .stream())
+                .flatMap(a -> HintUtils.getAnnotationMirrorFieldClassNames(a, annotationFieldName).stream())
                 .collect(Collectors.toList());
     }
 
@@ -100,9 +99,25 @@ final class HintUtils {
                         .filter(e -> parentAnnotationKeyPredicate.test(e.getKey()))
                         .flatMap(e -> ((List<?>) e.getValue().getValue()).stream())
                         .filter(a -> annotationPredicate.test(((AnnotationValue) a)))
-                        .flatMap(a -> ((AnnotationValue) a)
-                                .accept(new AnnotationTypeFieldVisitor(annotationName, annotationFieldName), null).stream()))
+                        .flatMap(a -> (((AnnotationMirror) a).getAnnotationType().asElement().getSimpleName()
+                                .contentEquals(annotationName))
+                                        ? HintUtils.getAnnotationMirrorFieldClassNames((AnnotationMirror) a, annotationFieldName)
+                                                .stream()
+                                        : Stream.empty()))
                 .map(Object::toString)
+                .filter(e -> !e.isBlank())
+                .collect(Collectors.toList());
+    }
+
+    static List<String> getAnnotationMirrorFieldClassNames(AnnotationMirror mirror, String annotationFieldName) {
+        return mirror.getElementValues().entrySet().stream()
+                .filter(e -> e.getKey().getSimpleName().contentEquals(annotationFieldName))
+                .flatMap(e -> {
+                    final Object value = e.getValue().getValue();
+                    return (value instanceof Collection)
+                            ? ((Collection<?>) value).stream().map(Object::toString)
+                            : Stream.of(value.toString());
+                })
                 .filter(e -> !e.isBlank())
                 .collect(Collectors.toList());
     }

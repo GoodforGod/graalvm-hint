@@ -29,6 +29,9 @@ final class LinkHintParser implements OptionParser {
     @Override
     public List<String> getOptions(RoundEnvironment roundEnv, ProcessingEnvironment processingEnv) {
         final Set<TypeElement> elements = HintUtils.getAnnotatedElements(roundEnv, LinkHint.class);
+        if (elements.isEmpty()) {
+            return Collections.emptyList();
+        }
 
         final boolean linkAll = elements.stream().anyMatch(e -> e.getAnnotation(LinkHint.class).all());
         if (linkAll) {

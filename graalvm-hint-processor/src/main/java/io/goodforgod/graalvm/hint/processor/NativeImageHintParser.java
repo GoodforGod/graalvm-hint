@@ -53,6 +53,9 @@ final class NativeImageHintParser implements OptionParser {
     public List<String> getOptions(RoundEnvironment roundEnv, ProcessingEnvironment processingEnv) {
         final Set<? extends Element> annotatedNative = roundEnv.getElementsAnnotatedWith(NativeImageHint.class);
         final Set<TypeElement> elements = ElementFilter.typesIn(annotatedNative);
+        if (elements.isEmpty()) {
+            return Collections.emptyList();
+        }
 
         final List<Entrypoint> entrypoints = elements.stream()
                 .map(element -> HintUtils.getAnnotationFieldClassNameAny(element, NativeImageHint.class, "entrypoint")
