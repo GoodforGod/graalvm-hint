@@ -17,7 +17,7 @@ Features:
 - Generate Initialization Hints ([native-image.properties](#initializationhint))
 - Generate Dynamic Proxy Hints ([dynamic-proxy-hint.json](#dynamicproxyhint))
 - Generate JNI Hints ([jni-config.json](#jnihint))
-- Generate Link Build Hints ([native-image.properties](#jnihint))
+- Generate Link Build Hints ([native-image.properties](#linkhint))
 
 ## Dependency :rocket:
 
@@ -91,6 +91,10 @@ compilyOnly "io.goodforgod:graalvm-hint-annotations:0.19.0"
 * [@JniHint](#jnihint)
     + [JNI Self Config](#jni-self-config)
     + [JNI Multi Config](#jni-multi-config)
+* [@LinkHint](#linkhint)
+  + [Link Self Config](#link-self-config)
+  + [Link Multi Config](#link-multi-config)
+  + [Link All Classes Config](#link-all-classes-config)
 * [Group & Artifact name](#group-and-artifact-name)
 
 ## @ReflectionHint
@@ -444,6 +448,69 @@ Generated *jni-config.json*:
   "name": "io.goodforgod.example.Request",
   "allDeclaredFields": true
 }]
+```
+
+## @LinkHint
+
+You can read more about GraalVM Link Build configuration [in official documentation here](https://www.graalvm.org/22.1/reference-manual/native-image/Options/#options-to-native-image-builder).
+
+Hint is only **available in GraalVM 22.1.0+**, check this [PR for more info](https://github.com/oracle/graal/pull/4305).
+
+Specify types to be fully defined at image build-time.
+
+### Link Self Config
+
+Simple case for single Java class:
+```java
+@LinkHint
+public class RequestOnly {
+
+    private String name;
+}
+```
+
+Generated *native-image.properties*:
+```properties
+Args = --link-at-build-time=io.goodforgod.graalvm.hint.processor.RequestOnly
+```
+
+### Link Multi Config
+
+There may be more different cases, like generating hints for classes that are package private or just private, also there hint can be used for whole package.
+
+Complex example generating link hints:
+```java
+@LinkHint(types = { Response.class, Request.class })
+@LinkHint(typeNames = { "io.goodforgod.graalvm.hint.processor"})
+public final class JniConfig {
+
+}
+```
+
+Generated *native-image.properties*:
+```properties
+Args = --link-at-build-time=io.goodforgod.graalvm.hint.processor,io.goodforgod.graalvm.hint.processor.Response,io.goodforgod.graalvm.hint.processor.Request
+```
+
+### Link All Classes Config
+
+Is the same as using GraalVM flag without options.
+```text
+If used without args, all classes in scope of the option are required to be fully defined.
+```
+
+Example how to force all classes to link in build time, no matter what how other class declare this hint, if any annotation with all = true found, then it will be used this way.
+```java
+@LinkHint(all = true)
+public class RequestOnly {
+
+    private String name;
+}
+```
+
+Generated *native-image.properties*:
+```properties
+Args = --link-at-build-time
 ```
 
 ## Group and Artifact name
