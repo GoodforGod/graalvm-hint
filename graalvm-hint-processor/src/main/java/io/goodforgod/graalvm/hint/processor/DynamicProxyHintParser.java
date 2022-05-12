@@ -6,7 +6,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
-import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
@@ -43,6 +43,9 @@ final class DynamicProxyHintParser implements OptionParser {
     public List<String> getOptions(RoundEnvironment roundEnv, ProcessingEnvironment processingEnv) {
         final Set<? extends Element> annotated = roundEnv.getElementsAnnotatedWith(DynamicProxyHint.class);
         final Set<TypeElement> elements = ElementFilter.typesIn(annotated);
+        if (elements.isEmpty()) {
+            return Collections.emptyList();
+        }
 
         final List<String> resources = elements.stream()
                 .map(element -> element.getAnnotation(DynamicProxyHint.class))
@@ -89,7 +92,6 @@ final class DynamicProxyHintParser implements OptionParser {
     }
 
     private List<Configuration> getDynamicProxyConfigurations(TypeElement element) {
-        final String annotationName = DynamicProxyHint.Configuration.class.getSimpleName();
         final String annotationParent = DynamicProxyHint.class.getSimpleName();
         final String elementName = element.getQualifiedName().toString();
         final List<Configuration> interfaceConfigurations = element.getAnnotationMirrors().stream()
@@ -98,8 +100,8 @@ final class DynamicProxyHintParser implements OptionParser {
                         .filter(e -> e.getKey().getSimpleName().contentEquals("value"))
                         .flatMap(e -> ((List<?>) e.getValue().getValue()).stream()
                                 .map(an -> {
-                                    final List<String> interfaces = ((AnnotationValue) an)
-                                            .accept(new AnnotationTypeFieldVisitor(annotationName, "interfaces"), null).stream()
+                                    final List<String> interfaces = HintUtils
+                                            .getAnnotationMirrorFieldClassNames((AnnotationMirror) an, "interfaces").stream()
                                             .map(c -> c.substring(0, c.length() - 6))
                                             .collect(Collectors.toList());
 

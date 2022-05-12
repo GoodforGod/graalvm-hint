@@ -68,6 +68,10 @@ final class InitializationHintParser implements OptionParser {
         final Set<TypeElement> elements = HintUtils.getAnnotatedElements(roundEnv, InitializationHint.class,
                 InitializationHints.class);
 
+        if (elements.isEmpty()) {
+            return Collections.emptyList();
+        }
+
         final Map<InitPhase, List<Initialization>> groupedInitializationOptions = elements.stream()
                 .flatMap(e -> {
                     final InitializationHints hints = e.getAnnotation(InitializationHints.class);

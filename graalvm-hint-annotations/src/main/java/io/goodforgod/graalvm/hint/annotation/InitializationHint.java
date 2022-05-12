@@ -41,12 +41,12 @@ public @interface InitializationHint {
     enum InitPhase {
 
         /**
-         * Initialize during build phase of native-image.
+         * Initialize during build phase of native-image. (--initialize-at-build-time)
          */
         BUILD,
 
         /**
-         * Initialize during runtime phase (GraalVM default).
+         * Initialize during runtime phase (GraalVM default). (--initialize-at-run-time)
          */
         RUNTIME
     }

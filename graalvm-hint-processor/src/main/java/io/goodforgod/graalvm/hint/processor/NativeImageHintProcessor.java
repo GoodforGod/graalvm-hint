@@ -2,7 +2,7 @@ package io.goodforgod.graalvm.hint.processor;
 
 import io.goodforgod.graalvm.hint.annotation.DynamicProxyHint;
 import io.goodforgod.graalvm.hint.annotation.InitializationHint;
-import io.goodforgod.graalvm.hint.annotation.InitializationHints;
+import io.goodforgod.graalvm.hint.annotation.LinkHint;
 import io.goodforgod.graalvm.hint.annotation.NativeImageHint;
 import java.lang.annotation.Annotation;
 import java.util.List;
@@ -13,14 +13,13 @@ import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
 
 /**
- * Processes {@link NativeImageHint} and {@link InitializationHint} and {@link DynamicProxyHint}
- * annotations for
- * native-image.properties file
+ * Processes {@link OptionParser} annotations for native-image.properties file.
  *
  * @author Anton Kurako (GoodforGod)
  * @see DynamicProxyHint
  * @see NativeImageHint
  * @see InitializationHint
+ * @see LinkHint
  * @since 30.09.2021
  */
 public final class NativeImageHintProcessor extends AbstractHintProcessor {
@@ -28,22 +27,17 @@ public final class NativeImageHintProcessor extends AbstractHintProcessor {
     private static final String FILE_NAME = "native-image.properties";
     private static final String ARG_SEPARATOR = " \\\n       ";
 
-    private static final NativeImageHintParser NATIVE_IMAGE_HINT_PARSER = new NativeImageHintParser();
-    private static final InitializationHintParser INITIALIZATION_HINT_PARSER = new InitializationHintParser();
-    private static final DynamicProxyHintParser DYNAMIC_PROXY_HINT_PARSER = new DynamicProxyHintParser();
-
     private static final List<OptionParser> OPTION_PARSERS = List.of(
-            NATIVE_IMAGE_HINT_PARSER,
-            INITIALIZATION_HINT_PARSER,
-            DYNAMIC_PROXY_HINT_PARSER);
+            new NativeImageHintParser(),
+            new InitializationHintParser(),
+            new LinkHintParser(),
+            new DynamicProxyHintParser());
 
     @Override
     protected Set<Class<? extends Annotation>> getSupportedAnnotations() {
-        return Set.of(
-                DynamicProxyHint.class,
-                NativeImageHint.class,
-                InitializationHint.class,
-                InitializationHints.class);
+        return OPTION_PARSERS.stream()
+                .flatMap(p -> p.getSupportedAnnotations().stream())
+                .collect(Collectors.toSet());
     }
 
     @Override
@@ -59,7 +53,7 @@ public final class NativeImageHintProcessor extends AbstractHintProcessor {
 
             if (options.isEmpty()) {
                 final String annotations = OPTION_PARSERS.stream()
-                        .flatMap(p -> p.getSupportedAnnotations().stream()
+                        .flatMap(parser -> parser.getSupportedAnnotations().stream()
                                 .filter(a -> !roundEnv.getElementsAnnotatedWith(a).isEmpty()))
                         .map(Class::getSimpleName)
                         .collect(Collectors.joining(","));
