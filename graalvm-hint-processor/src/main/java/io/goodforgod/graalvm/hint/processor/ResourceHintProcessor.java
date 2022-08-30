@@ -58,8 +58,8 @@ public final class ResourceHintProcessor extends AbstractHintProcessor {
             final String resourceConfigJson = getResourceConfig(elements);
 
             final HintOrigin origin = HintUtils.getHintOrigin(roundEnv, processingEnv);
-            final String filePath = origin.getRelativePathForFile(FILE_NAME);
-            return HintUtils.writeConfigFile(filePath, resourceConfigJson, processingEnv);
+            final HintFile file = origin.getFileWithRelativePath(FILE_NAME);
+            return HintUtils.writeConfigFile(file, resourceConfigJson, processingEnv);
         } catch (HintException e) {
             processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, e.getMessage());
             return false;

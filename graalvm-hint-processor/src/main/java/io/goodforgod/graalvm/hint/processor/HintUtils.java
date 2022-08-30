@@ -122,19 +122,21 @@ final class HintUtils {
                 .collect(Collectors.toList());
     }
 
-    static boolean writeConfigFile(String filePath, String data, ProcessingEnvironment processingEnv) {
+    static boolean writeConfigFile(HintFile file, String data, ProcessingEnvironment processingEnv) {
         try {
-            final FileObject fileObject = processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT, "", filePath);
+            final FileObject fileObject = processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT, "",
+                    file.getPath());
             try (Writer writer = fileObject.openWriter()) {
                 writer.write(data);
             }
         } catch (Exception e) {
             processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR,
-                    "Couldn't write " + filePath + " due to: " + e.getMessage());
+                    "Couldn't write GraalVM Hint " + file.getPath() + " due to: " + e.getMessage());
             return false;
         }
 
-        processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "Generating file " + filePath + " to: " + filePath);
+        processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE,
+                "Generating GraalVM Hint " + file.getName() + " to: " + file.getPath());
         return true;
     }
 

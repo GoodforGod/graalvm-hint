@@ -29,8 +29,8 @@ final class HintOrigin {
         this.artifact = artifact;
     }
 
-    public String getRelativePathForFile(String fileName) {
-        return "META-INF/native-image/" + group + "/" + artifact + "/" + fileName;
+    public HintFile getFileWithRelativePath(String fileName) {
+        return new HintFile(fileName, "META-INF/native-image/" + group + "/" + artifact + "/");
     }
 
     @Override

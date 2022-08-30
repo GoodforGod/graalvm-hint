@@ -66,8 +66,8 @@ public final class NativeImageHintProcessor extends AbstractHintProcessor {
                         .collect(Collectors.joining(ARG_SEPARATOR, "Args = ", ""));
 
                 final HintOrigin origin = HintUtils.getHintOrigin(roundEnv, processingEnv);
-                final String filePath = origin.getRelativePathForFile(FILE_NAME);
-                return HintUtils.writeConfigFile(filePath, nativeImageProperties, processingEnv);
+                final HintFile file = origin.getFileWithRelativePath(FILE_NAME);
+                return HintUtils.writeConfigFile(file, nativeImageProperties, processingEnv);
             }
         } catch (HintException e) {
             processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, e.getMessage());
