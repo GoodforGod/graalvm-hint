@@ -30,7 +30,7 @@ final class HintOrigin {
     }
 
     public HintFile getFileWithRelativePath(String fileName) {
-        return new HintFile(fileName, "META-INF/native-image/" + group + "/" + artifact + "/");
+        return new HintFile(fileName, "META-INF/native-image/" + group + "/" + artifact);
     }
 
     @Override
