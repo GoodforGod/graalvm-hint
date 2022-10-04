@@ -58,6 +58,22 @@ class ReflectionHintProcessorTests extends ProcessorRunner {
     }
 
     @Test
+    void reflectionHintForMultipleClassesAndManyAnnotations() {
+        final Compilation compilation = Compiler.javac()
+                .withProcessors(new ReflectionHintProcessor())
+                .compile(JavaFileObjects.forResource("reflectionhint/source/RequestOnly.java"),
+                        JavaFileObjects.forResource("reflectionhint/source/Multiple.java"),
+                        JavaFileObjects.forResource("reflectionhint/source/ResponseOnly.java"));
+
+        CompilationSubject.assertThat(compilation).succeeded();
+        CompilationSubject.assertThat(compilation)
+                .generatedFile(StandardLocation.CLASS_OUTPUT,
+                        "META-INF/native-image/io.goodforgod.graalvm.hint.processor/hint/reflect-config.json")
+                .contentsAsString(StandardCharsets.UTF_8)
+                .isEqualTo(getResourceContentAsString("reflectionhint/generated/reflect-config-all.json"));
+    }
+
+    @Test
     void reflectionHintForMultipleAccessHints() {
         final Compilation compilation = Compiler.javac()
                 .withProcessors(new ReflectionHintProcessor())

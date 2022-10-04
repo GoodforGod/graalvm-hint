@@ -1,0 +1,36 @@
+[{
+  "name": "io.goodforgod.graalvm.hint.processor.Multiple.Example1",
+  "allDeclaredFields": true
+},
+{
+  "name": "io.goodforgod.graalvm.hint.processor.Multiple.Example2",
+  "allDeclaredFields": true
+},
+{
+  "name": "io.goodforgod.graalvm.hint.processor.Multiple.Example3",
+  "allDeclaredConstructors": true,
+  "allDeclaredFields": true,
+  "allDeclaredMethods": true
+},
+{
+  "name": "io.goodforgod.graalvm.hint.processor.Multiple.Example4",
+  "allDeclaredConstructors": true,
+  "allDeclaredFields": true,
+  "allDeclaredMethods": true
+},
+{
+  "name": "io.goodforgod.graalvm.hint.processor.RequestOnly",
+  "allDeclaredConstructors": true,
+  "allDeclaredFields": true,
+  "allDeclaredMethods": true
+},
+{
+  "name": "io.goodforgod.graalvm.hint.processor.ResponseOnly",
+  "allDeclaredConstructors": true,
+  "allDeclaredFields": true,
+  "allDeclaredMethods": true
+},
+{
+  "name": "org.simpleframework.xml.core.ElementLabel",
+  "allDeclaredFields": true
+}]
