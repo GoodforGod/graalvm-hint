@@ -70,9 +70,9 @@ final class DynamicProxyHintParser implements OptionParser {
                     .collect(Collectors.joining(",\n", "[\n", "\n]"));
 
             final HintOrigin origin = HintUtils.getHintOrigin(roundEnv, processingEnv);
-            final String filePath = origin.getRelativePathForFile("dynamic-proxy-config.json");
-            HintUtils.writeConfigFile(filePath, proxyConfigurationFile, processingEnv);
-            resources.add(filePath);
+            final HintFile file = origin.getFileWithRelativePath("dynamic-proxy-config.json");
+            HintUtils.writeConfigFile(file, proxyConfigurationFile, processingEnv);
+            resources.add(file.getPath());
         }
 
         final List<String> options = new ArrayList<>();
@@ -91,27 +91,23 @@ final class DynamicProxyHintParser implements OptionParser {
         return options;
     }
 
-    private List<Configuration> getDynamicProxyConfigurations(TypeElement element) {
+    private List<Configuration> getDynamicProxyConfigurations(TypeElement type) {
         final String annotationParent = DynamicProxyHint.class.getSimpleName();
-        final String elementName = element.getQualifiedName().toString();
-        final List<Configuration> interfaceConfigurations = element.getAnnotationMirrors().stream()
-                .filter(a -> a.getAnnotationType().asElement().getSimpleName().contentEquals(annotationParent))
-                .flatMap(a -> a.getElementValues().entrySet().stream()
-                        .filter(e -> e.getKey().getSimpleName().contentEquals("value"))
-                        .flatMap(e -> ((List<?>) e.getValue().getValue()).stream()
-                                .map(an -> {
-                                    final List<String> interfaces = HintUtils
-                                            .getAnnotationMirrorFieldClassNames((AnnotationMirror) an, "interfaces").stream()
-                                            .map(c -> c.substring(0, c.length() - 6))
-                                            .collect(Collectors.toList());
-
-                                    return new Configuration(interfaces);
-                                })))
+        final List<Configuration> interfaceConfigurations = type.getAnnotationMirrors().stream()
+                .filter(pa -> pa.getAnnotationType().asElement().getSimpleName().contentEquals(annotationParent))
+                .flatMap(pa -> pa.getElementValues().entrySet().stream())
+                .filter(e -> e.getKey().getSimpleName().contentEquals("value"))
+                .flatMap(e -> ((List<?>) e.getValue().getValue()).stream())
+                .map(a -> {
+                    final List<String> interfaces = HintUtils.getAnnotationFieldValues((AnnotationMirror) a, "interfaces");
+                    return new Configuration(interfaces);
+                })
                 .collect(Collectors.toList());
 
-        if (interfaceConfigurations.isEmpty() && isSelfConfiguration(element)) {
-            if (element.getKind().isInterface()) {
-                interfaceConfigurations.add(new Configuration(List.of(elementName)));
+        if (interfaceConfigurations.isEmpty() && isSelfConfiguration(type)) {
+            final String elementName = type.getQualifiedName().toString();
+            if (type.getKind().isInterface()) {
+                return List.of(new Configuration(List.of(elementName)));
             } else {
                 throw new HintException(elementName + " is annotated with @"
                         + DynamicProxyHint.class.getSimpleName() + " hint but is not an interface");

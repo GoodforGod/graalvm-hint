@@ -5,13 +5,11 @@ import io.goodforgod.graalvm.hint.annotation.InitializationHint.InitPhase;
 import io.goodforgod.graalvm.hint.annotation.InitializationHints;
 import java.lang.annotation.Annotation;
 import java.util.*;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.TypeElement;
 
 /**
@@ -67,7 +65,6 @@ final class InitializationHintParser implements OptionParser {
     public List<String> getOptions(RoundEnvironment roundEnv, ProcessingEnvironment processingEnv) {
         final Set<TypeElement> elements = HintUtils.getAnnotatedElements(roundEnv, InitializationHint.class,
                 InitializationHints.class);
-
         if (elements.isEmpty()) {
             return Collections.emptyList();
         }
@@ -77,10 +74,9 @@ final class InitializationHintParser implements OptionParser {
                     final InitializationHints hints = e.getAnnotation(InitializationHints.class);
                     if (hints == null) {
                         final InitializationHint hint = e.getAnnotation(InitializationHint.class);
-                        return getInitializations(e, hint, false);
+                        return getAnnotationPhases(e, hint).stream();
                     } else {
-                        return Arrays.stream(hints.value())
-                                .flatMap(h -> getInitializations(e, h, true));
+                        return getParentAnnotationPhases(e, InitializationHint.class, InitializationHints.class).stream();
                     }
                 })
                 .distinct()
@@ -95,35 +91,46 @@ final class InitializationHintParser implements OptionParser {
                 .collect(Collectors.toList());
     }
 
-    private Stream<Initialization> getInitializations(TypeElement element, InitializationHint hint, boolean isParentAnnotation) {
-        final List<String> types = (!isParentAnnotation)
-                ? HintUtils.getAnnotationFieldClassNames(element, InitializationHint.class, "types")
-                : HintUtils.getAnnotationFieldClassNames(element, InitializationHint.class, "types", InitializationHints.class,
-                        getParentAnnotationPredicate(hint.value()));
-
+    private static Collection<Initialization> getAnnotationPhases(TypeElement element,
+                                                                  InitializationHint hint) {
+        final InitializationHint.InitPhase phase = hint.value();
         final List<String> typeNames = Arrays.asList(hint.typeNames());
+        final List<String> types = HintUtils.getAnnotationFieldClassNames(element, InitializationHint.class, "types");
         if (types.isEmpty() && typeNames.isEmpty()) {
-            return Stream.of(new Initialization(element.getQualifiedName().toString(), hint.value()));
-        } else {
-            final Stream<String> typeStream = types.stream().map(c -> c.endsWith(".class")
-                    ? c.substring(0, c.length() - 6)
-                    : c);
-
-            return Stream.concat(typeStream, typeNames.stream())
-                    .map(type -> new Initialization(type, hint.value()));
+            final String selfName = element.getQualifiedName().toString();
+            return List.of(new Initialization(selfName, phase));
         }
+
+        return Stream.concat(types.stream(), typeNames.stream())
+                .map(t -> new Initialization(t, phase))
+                .collect(Collectors.toList());
     }
 
-    private Predicate<AnnotationValue> getParentAnnotationPredicate(InitPhase initPhase) {
-        return a -> {
-            final InitPhase annotationInitPhase = ((AnnotationMirror) a).getElementValues().entrySet().stream()
-                    .filter(e -> e.getKey().getSimpleName().contentEquals("value"))
-                    .findFirst()
-                    .map(entry -> InitPhase.valueOf(entry.getValue().getValue().toString()))
-                    .orElse(InitPhase.BUILD);
+    private static List<Initialization> getParentAnnotationPhases(TypeElement type,
+                                                                  Class<? extends Annotation> annotation,
+                                                                  Class<? extends Annotation> parentAnnotation) {
+        final String annotationName = annotation.getSimpleName();
+        final String annotationParent = parentAnnotation.getSimpleName();
+        return type.getAnnotationMirrors().stream()
+                .filter(pa -> pa.getAnnotationType().asElement().getSimpleName().contentEquals(annotationParent))
+                .flatMap(pa -> pa.getElementValues().entrySet().stream())
+                .flatMap(e -> ((List<?>) e.getValue().getValue()).stream().map(AnnotationMirror.class::cast))
+                .filter(a -> (a.getAnnotationType().asElement().getSimpleName().contentEquals(annotationName)))
+                .flatMap(a -> {
+                    final List<String> types = HintUtils.getAnnotationFieldValues(a, "types");
+                    final List<String> typeNames = HintUtils.getAnnotationFieldValues(a, "typeNames");
+                    final InitializationHint.InitPhase phase = HintUtils
+                            .getAnnotationFieldValues(a, "value")
+                            .stream()
+                            .map(InitializationHint.InitPhase::valueOf)
+                            .findFirst()
+                            .orElse(InitPhase.BUILD);
 
-            return annotationInitPhase.equals(initPhase);
-        };
+                    return (types.isEmpty() && typeNames.isEmpty())
+                            ? Stream.empty()
+                            : Stream.concat(types.stream(), typeNames.stream()).map(t -> new Initialization(t, phase));
+                })
+                .collect(Collectors.toList());
     }
 
     private String getInitializationArgumentName(InitPhase phase) {

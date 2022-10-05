@@ -29,14 +29,14 @@ abstract class AbstractHintProcessor extends AbstractProcessor {
     @Override
     public SourceVersion getSupportedSourceVersion() {
         SourceVersion sourceVersion = SourceVersion.latest();
-        if (sourceVersion.ordinal() <= 17) {
+        if (sourceVersion.ordinal() <= 19) {
             if (sourceVersion.ordinal() >= 11) {
                 return sourceVersion;
             } else {
                 return SourceVersion.RELEASE_11;
             }
         } else {
-            return SourceVersion.values()[17];
+            return SourceVersion.values()[19];
         }
     }
 }

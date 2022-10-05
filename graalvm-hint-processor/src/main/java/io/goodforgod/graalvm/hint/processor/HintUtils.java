@@ -3,7 +3,6 @@ package io.goodforgod.graalvm.hint.processor;
 import java.io.Writer;
 import java.lang.annotation.Annotation;
 import java.util.*;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -65,76 +64,54 @@ final class HintUtils {
         final String annotationName = annotation.getSimpleName();
         return type.getAnnotationMirrors().stream()
                 .filter(a -> a.getAnnotationType().asElement().getSimpleName().contentEquals(annotationName))
-                .flatMap(a -> HintUtils.getAnnotationMirrorFieldClassNames(a, annotationFieldName).stream())
+                .flatMap(a -> HintUtils.getAnnotationFieldValues(a, annotationFieldName).stream())
                 .collect(Collectors.toList());
     }
 
-    static List<String> getAnnotationFieldClassNames(TypeElement type,
-                                                     Class<? extends Annotation> annotation,
-                                                     String annotationFieldName,
-                                                     Class<? extends Annotation> parentAnnotation) {
-        return getAnnotationFieldClassNames(type, annotation, annotationFieldName, parentAnnotation, a -> true);
+    static List<String> getAnnotationFieldValuesOrDefault(AnnotationMirror mirror,
+                                                          String annotationFieldName,
+                                                          List<String> defaultValues) {
+        final List<String> fieldValues = getAnnotationFieldValues(mirror, annotationFieldName);
+        return (fieldValues.isEmpty())
+                ? defaultValues
+                : fieldValues;
     }
 
-    static List<String> getAnnotationFieldClassNames(TypeElement type,
-                                                     Class<? extends Annotation> annotation,
-                                                     String annotationFieldName,
-                                                     Class<? extends Annotation> parentAnnotation,
-                                                     Predicate<AnnotationValue> annotationPredicate) {
-        return getAnnotationFieldClassNames(type, annotation, annotationFieldName, parentAnnotation, annotationPredicate,
-                e -> e.getSimpleName().contentEquals("value"));
-    }
-
-    static List<String> getAnnotationFieldClassNames(TypeElement type,
-                                                     Class<? extends Annotation> annotation,
-                                                     String annotationFieldName,
-                                                     Class<? extends Annotation> parentAnnotation,
-                                                     Predicate<AnnotationValue> annotationPredicate,
-                                                     Predicate<ExecutableElement> parentAnnotationKeyPredicate) {
-        final String annotationName = annotation.getSimpleName();
-        final String annotationParent = parentAnnotation.getSimpleName();
-        return type.getAnnotationMirrors().stream()
-                .filter(pa -> pa.getAnnotationType().asElement().getSimpleName().contentEquals(annotationParent))
-                .flatMap(pa -> pa.getElementValues().entrySet().stream()
-                        .filter(e -> parentAnnotationKeyPredicate.test(e.getKey()))
-                        .flatMap(e -> ((List<?>) e.getValue().getValue()).stream())
-                        .filter(a -> annotationPredicate.test(((AnnotationValue) a)))
-                        .flatMap(a -> (((AnnotationMirror) a).getAnnotationType().asElement().getSimpleName()
-                                .contentEquals(annotationName))
-                                        ? HintUtils.getAnnotationMirrorFieldClassNames((AnnotationMirror) a, annotationFieldName)
-                                                .stream()
-                                        : Stream.empty()))
-                .map(Object::toString)
-                .filter(e -> !e.isBlank())
-                .collect(Collectors.toList());
-    }
-
-    static List<String> getAnnotationMirrorFieldClassNames(AnnotationMirror mirror, String annotationFieldName) {
+    static List<String> getAnnotationFieldValues(AnnotationMirror mirror,
+                                                 String annotationFieldName) {
         return mirror.getElementValues().entrySet().stream()
                 .filter(e -> e.getKey().getSimpleName().contentEquals(annotationFieldName))
                 .flatMap(e -> {
                     final Object value = e.getValue().getValue();
-                    return (value instanceof Collection)
-                            ? ((Collection<?>) value).stream().map(Object::toString)
-                            : Stream.of(value.toString());
+                    if (value instanceof Collection) {
+                        return ((Collection<?>) value).stream().map(v -> (v instanceof AnnotationValue)
+                                ? ((AnnotationValue) v).getValue().toString()
+                                : v.toString());
+                    } else if (value instanceof AnnotationValue) {
+                        return Stream.of(((AnnotationValue) value).getValue().toString());
+                    }
+
+                    return Stream.of(value.toString());
                 })
                 .filter(e -> !e.isBlank())
                 .collect(Collectors.toList());
     }
 
-    static boolean writeConfigFile(String filePath, String data, ProcessingEnvironment processingEnv) {
+    static boolean writeConfigFile(HintFile file, String data, ProcessingEnvironment processingEnv) {
         try {
-            final FileObject fileObject = processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT, "", filePath);
+            final FileObject fileObject = processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT, "",
+                    file.getPath());
             try (Writer writer = fileObject.openWriter()) {
                 writer.write(data);
             }
         } catch (Exception e) {
             processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR,
-                    "Couldn't write " + filePath + " due to: " + e.getMessage());
+                    "Couldn't write GraalVM Hint " + file.getName() + " to due to: " + e.getMessage());
             return false;
         }
 
-        processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "Generating file " + filePath + " to: " + filePath);
+        processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE,
+                "Generating GraalVM Hint " + file.getName() + " to: " + file.getPath());
         return true;
     }
 
