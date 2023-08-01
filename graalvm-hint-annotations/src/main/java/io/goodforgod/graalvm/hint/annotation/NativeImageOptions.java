@@ -22,11 +22,21 @@ public enum NativeImageOptions {
     VERBOSE("--verbose"),
     VERSION("--version"),
     ENABLE_HTTP("--enable-http"),
+    /**
+     * <a href=
+     * "https://www.graalvm.org/latest/reference-manual/native-image/optimizations-and-performance/MemoryManagement/#g1-garbage-collector">GC</a>
+     */
+    ENABLE_G1("-H:+UseLowLatencyGC"),
+    ENABLE_SERIAL("--gc=serial"),
     ENABLE_HTTPS("--enable-https"),
+    ENABLE_MONITORING("--enable-monitoring=jmxserver,jmxclient,jvmstat"),
     ENABLE_URL_PROTOCOLS("--enable-url-protocols"),
     ALLOW_INCOMPLETE_CLASSPATH("--allow-incomplete-classpath"),
     REPORT_UNSUPPORTED("--report-unsupported-elements-at-runtime"),
     QUICK_BUILD("-Ob"),
+    MAX_COMPATIBILITY("-march=compatibility"),
+    MAX_PERFORMANCE("-march=native"),
+    BUILD_REPORT("-H:+BuildReport"),
     USE_LLVM("-H:CompilerBackend=llvm"),
     INLINE_BEFORE_ANALYSIS("-H:+InlineBeforeAnalysis"),
     PRINT_INITIALIZATION("-H:+PrintClassInitialization"),

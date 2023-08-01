@@ -2,7 +2,10 @@ package io.goodforgod.graalvm.hint.processor;
 
 import io.goodforgod.graalvm.hint.annotation.LinkHint;
 import java.lang.annotation.Annotation;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.processing.ProcessingEnvironment;

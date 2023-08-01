@@ -1,7 +1,8 @@
 # GraalVM Hint Processor
 
-![GraalVM Enabled](https://img.shields.io/badge/GraalVM-Ready-orange?style=plastic)
-[![GitHub Action](https://github.com/goodforgod/graalvm-hint/workflows/Java%20CI/badge.svg)](https://github.com/GoodforGod/graalvm-hint/actions?query=workflow%3A%22Java+CI%22)
+[![Minimum required Java version](https://img.shields.io/badge/Java-11%2B-blue?logo=openjdk)](https://openjdk.org/projects/jdk/11/)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.goodforgod/graalvm-hint-processor/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.goodforgod/graalvm-hint-processor)
+[![GitHub Action](https://github.com/goodforgod/graalvm-hint/workflows/Release/badge.svg)](https://github.com/GoodforGod/graalvm-hint/actions?query=workflow%3A%22Release%22)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=GoodforGod_graalvm-hint&metric=coverage)](https://sonarcloud.io/dashboard?id=GoodforGod_graalvm-hint)
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=GoodforGod_graalvm-hint&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=GoodforGod_graalvm-hint)
 [![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=GoodforGod_graalvm-hint&metric=ncloc)](https://sonarcloud.io/dashboard?id=GoodforGod_graalvm-hint)
@@ -21,12 +22,10 @@ Features:
 
 ## Dependency :rocket:
 
-Java 11+ is supported.
-
 [**Gradle**](https://mvnrepository.com/artifact/io.goodforgod/graalvm-hint-processor)
 ```groovy
-annotationProcessor "io.goodforgod:graalvm-hint-processor:0.20.0"
-compilyOnly "io.goodforgod:graalvm-hint-annotations:0.20.0"
+annotationProcessor "io.goodforgod:graalvm-hint-processor:1.0.0"
+compilyOnly "io.goodforgod:graalvm-hint-annotations:1.0.0"
 ```
 
 [**Maven**](https://mvnrepository.com/artifact/io.goodforgod/graalvm-hint-processor)
@@ -35,14 +34,14 @@ compilyOnly "io.goodforgod:graalvm-hint-annotations:0.20.0"
     <dependency>
         <groupId>io.goodforgod</groupId>
         <artifactId>graalvm-hint-annotations</artifactId>
-        <version>0.20.0</version>
+        <version>1.0.0</version>
         <scope>compile</scope>
         <optional>true</optional>
     </dependency>
     <dependency>
         <groupId>io.goodforgod</groupId>
         <artifactId>graalvm-hint-processor</artifactId>
-        <version>0.20.0</version>
+        <version>1.0.0</version>
         <scope>provided</scope>
     </dependency>
 </dependencies>
@@ -60,7 +59,7 @@ compilyOnly "io.goodforgod:graalvm-hint-annotations:0.20.0"
                     <path>
                         <groupId>io.goodforgod</groupId>
                         <artifactId>graalvm-hint-processor</artifactId>
-                        <version>0.20.0</version>
+                        <version>1.0.0</version>
                     </path>
                 </annotationProcessorPaths>
             </configuration>

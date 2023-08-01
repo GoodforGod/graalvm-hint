@@ -61,9 +61,10 @@ public final class ResourceHintProcessor extends AbstractHintProcessor {
             final HintFile file = origin.getFileWithRelativePath(FILE_NAME);
             return HintUtils.writeConfigFile(file, resourceConfigJson, processingEnv);
         } catch (HintException e) {
-            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, e.getMessage());
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, e.getMessage(), e.getElement());
             return false;
         } catch (Exception e) {
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING, e.getMessage());
             e.printStackTrace();
             return false;
         }
@@ -131,7 +132,7 @@ public final class ResourceHintProcessor extends AbstractHintProcessor {
             if (includeBatch.isEmpty() && excludeBatch.isEmpty() && bundleBatch.isEmpty()) {
                 throw new HintException(element.getQualifiedName().toString() + " is annotated with @"
                         + ResourceHint.class.getSimpleName()
-                        + ", but no valid 'include' or 'exclude' or 'bundle' parameters specified!");
+                        + ", but no valid 'include' or 'exclude' or 'bundle' parameters specified!", element);
             }
 
             resources.includes.addAll(includeBatch);

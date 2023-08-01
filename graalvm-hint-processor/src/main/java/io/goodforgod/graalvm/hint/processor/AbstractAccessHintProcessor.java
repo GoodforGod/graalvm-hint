@@ -10,6 +10,7 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.TypeElement;
+import javax.tools.Diagnostic;
 
 /**
  * Processes {@link ReflectionHint} and {@link JniHint} annotations for native-image hint files
@@ -117,6 +118,7 @@ abstract class AbstractAccessHintProcessor extends AbstractHintProcessor {
             final HintFile file = origin.getFileWithRelativePath(getFileName());
             return HintUtils.writeConfigFile(file, configJson, processingEnv);
         } catch (Exception e) {
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING, e.getMessage());
             e.printStackTrace();
             return false;
         }

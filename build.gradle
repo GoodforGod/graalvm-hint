@@ -1,40 +1,58 @@
-plugins {
-    id "jacoco"
-    id "java-library"
-    id "maven-publish"
-
-    id "com.diffplug.spotless" version "6.1.0"
+buildscript {
+    dependencies {
+        classpath "com.diffplug.spotless:spotless-plugin-gradle:6.19.0"
+    }
 }
 
-group = groupId
-version = artifactVersion
+plugins {
+    id "base"
+    id "jacoco"
+    id "jacoco-report-aggregation"
+    id "org.sonarqube" version "4.2.1.3168"
+    id "io.github.gradle-nexus.publish-plugin" version "1.3.0"
+}
 
-subprojects {
-    apply plugin: "jacoco"
-    apply plugin: "java-library"
-    apply plugin: "maven-publish"
-    apply plugin: "com.diffplug.spotless"
+sonarqube {
+    properties {
+        property "sonar.host.url", "https://sonarcloud.io"
+        property "sonar.organization", "goodforgod"
+        property "sonar.projectKey", "GoodforGod_$artifactRootId"
+        property "sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/testCodeCoverageReport/testCodeCoverageReport.xml"
+    }
+}
+
+dependencies {
+    jacocoAggregation project(":graalvm-hint-annotations")
+    jacocoAggregation project(":graalvm-hint-processor")
+}
+
+reporting {
+    reports {
+        testCodeCoverageReport(JacocoCoverageReport) {
+            testType = TestSuiteType.UNIT_TEST
+        }
+    }
+}
+
+allprojects {
+    group = groupId
+    var ver = System.getenv().getOrDefault("RELEASE_VERSION", artifactVersion)
+    version = ver.startsWith("v") ? ver.substring(1) : ver
 
     repositories {
         mavenLocal()
         mavenCentral()
         maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
     }
+}
 
-    group = groupId
-    version = artifactVersion
+subprojects {
+    apply plugin: "jacoco"
+    apply plugin: "java-library"
+    apply plugin: "com.diffplug.spotless"
 
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11
-
-    spotless {
-        java {
-            encoding("UTF-8")
-            importOrder()
-            removeUnusedImports()
-            eclipse("4.21.0").configFile("${rootDir}/config/codestyle.xml")
-        }
-    }
 
     test {
         useJUnitPlatform()
@@ -44,12 +62,20 @@ subprojects {
         }
 
         reports {
-            html.enabled(false)
-            junitXml.enabled(false)
+            html.required = false
+            junitXml.required = false
         }
     }
 
-    jar.enabled(true)
+    spotless {
+        java {
+            encoding("UTF-8")
+            importOrder()
+            removeUnusedImports()
+            eclipse("4.21").configFile("${rootDir}/config/codestyle.xml")
+        }
+    }
+
 
     tasks.withType(JavaCompile) {
         options.encoding("UTF-8")
@@ -60,7 +86,7 @@ subprojects {
     check.dependsOn jacocoTestReport
     jacocoTestReport {
         reports {
-            xml.enabled true
+            xml.required = true
             html.destination file("${buildDir}/jacocoHtml")
         }
     }
@@ -69,6 +95,102 @@ subprojects {
         options.encoding = "UTF-8"
         if (JavaVersion.current().isJava9Compatible()) {
             options.addBooleanOption("html5", true)
+        }
+    }
+}
+
+nexusPublishing {
+    packageGroup = groupId
+    repositories {
+        sonatype {
+            username = System.getenv("OSS_USERNAME")
+            password = System.getenv("OSS_PASSWORD")
+            nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
+            snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
+        }
+    }
+}
+
+subprojects {
+    apply plugin: "maven-publish"
+    apply plugin: "org.sonarqube"
+
+    sonarqube {
+        properties {
+            property "sonar.host.url", "https://sonarcloud.io"
+            property "sonar.organization", "goodforgod"
+            property "sonar.projectKey", "GoodforGod_$artifactRootId"
+        }
+    }
+
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                from components.java
+                artifactId = "$artifactRootId-${project.name}"
+
+                var artifactName = artifactId
+                pom {
+                    url = "https://github.com/GoodforGod/$artifactRootId"
+                    name = artifactName
+                    description = "Annotation Processors that generate GraalVM configuration hints for native-image applications."
+
+                    license {
+                        name = "Apache License 2.0"
+                        url = "https://github.com/GoodforGod/$artifactRootId/blob/master/LICENSE"
+                        distribution = "repo"
+                    }
+
+                    developer {
+                        id = "GoodforGod"
+                        name = "Anton Kurako"
+                        email = "goodforgod.dev@gmail.com"
+                        url = "https://github.com/GoodforGod"
+                    }
+
+                    scm {
+                        connection = "scm:git:git://github.com/GoodforGod/${artifactRootId}.git"
+                        developerConnection = "scm:git:ssh://GoodforGod/${artifactRootId}.git"
+                        url = "https://github.com/GoodforGod/$artifactRootId/tree/master"
+                    }
+                }
+            }
+        }
+        repositories {
+            maven {
+                def releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2"
+                def snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+                url = version.endsWith("SNAPSHOT") ? snapshotsRepoUrl : releasesRepoUrl
+                credentials {
+                    username System.getenv("OSS_USERNAME")
+                    password System.getenv("OSS_PASSWORD")
+                }
+            }
+            if (!version.endsWith("SNAPSHOT")) {
+                maven {
+                    name = "GitHubPackages"
+                    url = "https://maven.pkg.github.com/GoodforGod/$artifactRootId"
+                    credentials {
+                        username = System.getenv("GITHUB_ACTOR")
+                        password = System.getenv("GITHUB_TOKEN")
+                    }
+                }
+            }
+        }
+    }
+
+    java {
+        withJavadocJar()
+        withSourcesJar()
+    }
+
+    if (project.hasProperty("signingKey")) {
+        apply plugin: "signing"
+        signing {
+            def signingKey = findProperty("signingKey")
+            def signingPassword = findProperty("signingPassword")
+            useInMemoryPgpKeys(signingKey, signingPassword)
+            sign publishing.publications.mavenJava
         }
     }
 }

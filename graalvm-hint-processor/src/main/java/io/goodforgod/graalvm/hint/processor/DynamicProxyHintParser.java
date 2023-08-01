@@ -110,7 +110,7 @@ final class DynamicProxyHintParser implements OptionParser {
                 return List.of(new Configuration(List.of(elementName)));
             } else {
                 throw new HintException(elementName + " is annotated with @"
-                        + DynamicProxyHint.class.getSimpleName() + " hint but is not an interface");
+                        + DynamicProxyHint.class.getSimpleName() + " hint but is not an interface", type);
             }
         }
 

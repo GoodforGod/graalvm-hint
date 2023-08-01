@@ -1,5 +1,7 @@
 package io.goodforgod.graalvm.hint.processor;
 
+import javax.lang.model.element.Element;
+
 /**
  * Manageable annotation exception
  *
@@ -8,7 +10,14 @@ package io.goodforgod.graalvm.hint.processor;
  */
 final class HintException extends RuntimeException {
 
-    HintException(String message) {
+    private final Element element;
+
+    HintException(String message, Element element) {
         super(message);
+        this.element = element;
+    }
+
+    public Element getElement() {
+        return element;
     }
 }
