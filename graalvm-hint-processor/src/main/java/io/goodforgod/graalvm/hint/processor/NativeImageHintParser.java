@@ -66,7 +66,7 @@ final class NativeImageHintParser implements OptionParser {
                 .collect(Collectors.toList());
 
         if (entrypoints.size() > 1) {
-            throw new HintException("@NativeImageHint multiple entrypoints detected: " + entrypoints);
+            throw new HintException("@NativeImageHint multiple entrypoints detected: " + entrypoints, entrypoints.get(1).source);
         }
 
         final Optional<Entrypoint> entryClassName = entrypoints.stream().findFirst();

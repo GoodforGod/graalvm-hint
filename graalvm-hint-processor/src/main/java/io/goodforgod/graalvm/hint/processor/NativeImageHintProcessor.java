@@ -58,7 +58,7 @@ public final class NativeImageHintProcessor extends AbstractHintProcessor {
                         .map(Class::getSimpleName)
                         .collect(Collectors.joining(","));
 
-                processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING,
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR,
                         annotations + " are present but no options retrieved");
                 return false;
             } else {
@@ -70,7 +70,7 @@ public final class NativeImageHintProcessor extends AbstractHintProcessor {
                 return HintUtils.writeConfigFile(file, nativeImageProperties, processingEnv);
             }
         } catch (HintException e) {
-            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, e.getMessage());
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, e.getMessage(), e.getElement());
             return false;
         } catch (Exception e) {
             e.printStackTrace();
