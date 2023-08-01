@@ -73,6 +73,7 @@ public final class NativeImageHintProcessor extends AbstractHintProcessor {
             processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, e.getMessage(), e.getElement());
             return false;
         } catch (Exception e) {
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING, e.getMessage());
             e.printStackTrace();
             return false;
         }
