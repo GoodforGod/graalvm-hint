@@ -127,7 +127,7 @@ subprojects {
         publications {
             mavenJava(MavenPublication) {
                 from components.java
-                artifactId = "$artifactRootId-${project.name}"
+                artifactId = "${project.name}"
 
                 var artifactName = artifactId
                 pom {
