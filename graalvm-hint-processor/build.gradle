@@ -1,77 +1,9 @@
-plugins {
-    id "org.sonarqube" version "3.3"
-}
-
 dependencies {
     implementation project(":graalvm-hint-annotations")
 
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.8.2"
-    testImplementation "org.junit.jupiter:junit-jupiter-api:5.8.2"
-    testImplementation "org.junit.jupiter:junit-jupiter-params:5.8.2"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.9.3"
+    testImplementation "org.junit.jupiter:junit-jupiter-api:5.9.3"
+    testImplementation "org.junit.jupiter:junit-jupiter-params:5.9.3"
 
-    testImplementation "com.google.testing.compile:compile-testing:0.19"
-}
-
-sonarqube {
-    properties {
-        property "sonar.host.url", "https://sonarcloud.io"
-        property "sonar.organization", "goodforgod"
-        property "sonar.projectKey", "GoodforGod_$artifactRootId"
-    }
-}
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
-
-            pom {
-                name = "GraalVM Hint Processor"
-                url = "https://github.com/GoodforGod/$artifactRootId"
-                description = "Annotation Processors that generate GraalVM configuration hints for native-image applications."
-
-                license {
-                    name = "Apache License 2.0"
-                    url = "https://github.com/GoodforGod/$artifactRootId/blob/master/LICENSE"
-                    distribution = "repo"
-                }
-
-                developer {
-                    id = "GoodforGod"
-                    name = "Anton Kurako"
-                    email = "goodforgod.dev@gmail.com"
-                    url = "https://github.com/GoodforGod"
-                }
-
-                scm {
-                    connection = "scm:git:git://github.com/GoodforGod/${artifactRootId}.git"
-                    developerConnection = "scm:git:ssh://GoodforGod/${artifactRootId}.git"
-                    url = "https://github.com/GoodforGod/$artifactRootId/tree/master"
-                }
-            }
-        }
-    }
-    repositories {
-        maven {
-            def releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2"
-            def snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
-            url = version.endsWith("SNAPSHOT") ? snapshotsRepoUrl : releasesRepoUrl
-            credentials {
-                username System.getenv("OSS_USERNAME")
-                password System.getenv("OSS_PASSWORD")
-            }
-        }
-    }
-}
-
-java {
-    withJavadocJar()
-    withSourcesJar()
-}
-
-if (project.hasProperty("signing.keyId")) {
-    apply plugin: "signing"
-    signing {
-        sign publishing.publications.mavenJava
-    }
+    testImplementation "com.google.testing.compile:compile-testing:0.21.0"
 }
