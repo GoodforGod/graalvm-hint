@@ -23,7 +23,8 @@ public enum NativeImageOptions {
     VERSION("--version"),
     ENABLE_HTTP("--enable-http"),
     /**
-     * <a href="https://www.graalvm.org/latest/reference-manual/native-image/optimizations-and-performance/MemoryManagement/#g1-garbage-collector">GC</a>
+     * <a href=
+     * "https://www.graalvm.org/latest/reference-manual/native-image/optimizations-and-performance/MemoryManagement/#g1-garbage-collector">GC</a>
      */
     ENABLE_G1("-H:+UseLowLatencyGC"),
     ENABLE_SERIAL("--gc=serial"),
