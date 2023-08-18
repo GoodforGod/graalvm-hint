@@ -24,8 +24,8 @@ Features:
 
 [**Gradle**](https://mvnrepository.com/artifact/io.goodforgod/graalvm-hint-processor)
 ```groovy
-annotationProcessor "io.goodforgod:graalvm-hint-processor:1.0.0"
-compilyOnly "io.goodforgod:graalvm-hint-annotations:1.0.0"
+annotationProcessor "io.goodforgod:graalvm-hint-processor:1.1.0"
+compilyOnly "io.goodforgod:graalvm-hint-annotations:1.1.0"
 ```
 
 [**Maven**](https://mvnrepository.com/artifact/io.goodforgod/graalvm-hint-processor)
@@ -34,14 +34,14 @@ compilyOnly "io.goodforgod:graalvm-hint-annotations:1.0.0"
     <dependency>
         <groupId>io.goodforgod</groupId>
         <artifactId>graalvm-hint-annotations</artifactId>
-        <version>1.0.0</version>
+        <version>1.1.0</version>
         <scope>compile</scope>
         <optional>true</optional>
     </dependency>
     <dependency>
         <groupId>io.goodforgod</groupId>
         <artifactId>graalvm-hint-processor</artifactId>
-        <version>1.0.0</version>
+        <version>1.1.0</version>
         <scope>provided</scope>
     </dependency>
 </dependencies>
@@ -59,7 +59,7 @@ compilyOnly "io.goodforgod:graalvm-hint-annotations:1.0.0"
                     <path>
                         <groupId>io.goodforgod</groupId>
                         <artifactId>graalvm-hint-processor</artifactId>
-                        <version>1.0.0</version>
+                        <version>1.1.0</version>
                     </path>
                 </annotationProcessorPaths>
             </configuration>
