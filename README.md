@@ -25,7 +25,7 @@ Features:
 [**Gradle**](https://mvnrepository.com/artifact/io.goodforgod/graalvm-hint-processor)
 ```groovy
 annotationProcessor "io.goodforgod:graalvm-hint-processor:1.1.0"
-compilyOnly "io.goodforgod:graalvm-hint-annotations:1.1.0"
+compileOnly "io.goodforgod:graalvm-hint-annotations:1.1.0"
 ```
 
 [**Maven**](https://mvnrepository.com/artifact/io.goodforgod/graalvm-hint-processor)
