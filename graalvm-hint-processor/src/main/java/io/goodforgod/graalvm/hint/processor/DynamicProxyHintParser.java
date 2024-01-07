@@ -105,7 +105,7 @@ final class DynamicProxyHintParser implements OptionParser {
                 .collect(Collectors.toList());
 
         if (interfaceConfigurations.isEmpty() && isSelfConfiguration(type)) {
-            final String elementName = type.getQualifiedName().toString();
+            final String elementName = HintUtils.getElementClassName(type);
             if (type.getKind().isInterface()) {
                 return List.of(new Configuration(List.of(elementName)));
             } else {

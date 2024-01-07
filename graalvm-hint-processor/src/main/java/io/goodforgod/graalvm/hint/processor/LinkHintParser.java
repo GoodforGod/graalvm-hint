@@ -58,7 +58,7 @@ final class LinkHintParser implements OptionParser {
         final List<String> types = HintUtils.getAnnotationFieldClassNames(element, LinkHint.class, "types");
         final List<String> typeNames = Arrays.asList(hint.typeNames());
         if (types.isEmpty() && typeNames.isEmpty()) {
-            return Stream.of(element.getQualifiedName().toString());
+            return Stream.of(HintUtils.getElementClassName(element));
         } else {
             final Stream<String> typeStream = types.stream().map(c -> c.endsWith(".class")
                     ? c.substring(0, c.length() - 6)

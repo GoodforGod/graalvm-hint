@@ -50,7 +50,7 @@ public final class JniHintProcessor extends AbstractAccessHintProcessor {
         final List<String> typeNames = Arrays.asList(hint.typeNames());
         final List<String> types = HintUtils.getAnnotationFieldClassNames(element, JniHint.class, "types");
         if (types.isEmpty() && typeNames.isEmpty()) {
-            final String selfName = element.getQualifiedName().toString();
+            final String selfName = HintUtils.getElementClassName(element);
             return List.of(new Access(selfName, accessTypes));
         }
 
@@ -79,7 +79,7 @@ public final class JniHintProcessor extends AbstractAccessHintProcessor {
                             .toArray(JniHint.AccessType[]::new));
 
                     return (types.isEmpty() && typeNames.isEmpty())
-                            ? Stream.of(new Access(type.getQualifiedName().toString(), accessTypes))
+                            ? Stream.of(new Access(HintUtils.getElementClassName(type), accessTypes))
                             : Stream.concat(types.stream(), typeNames.stream()).map(t -> new Access(t, accessTypes));
                 })
                 .collect(Collectors.toList());

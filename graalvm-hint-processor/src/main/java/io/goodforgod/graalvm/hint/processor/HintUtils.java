@@ -8,6 +8,7 @@ import java.util.stream.Stream;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.*;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic;
 import javax.tools.FileObject;
@@ -84,17 +85,51 @@ final class HintUtils {
                 .flatMap(e -> {
                     final Object value = e.getValue().getValue();
                     if (value instanceof Collection) {
-                        return ((Collection<?>) value).stream().map(v -> (v instanceof AnnotationValue)
-                                ? ((AnnotationValue) v).getValue().toString()
-                                : v.toString());
-                    } else if (value instanceof AnnotationValue) {
-                        return Stream.of(((AnnotationValue) value).getValue().toString());
+                        return ((Collection<?>) value).stream().map(HintUtils::getAnnotationValueAsString);
+                    } else {
+                        return Stream.of(getAnnotationValueAsString(value));
                     }
-
-                    return Stream.of(value.toString());
                 })
                 .filter(e -> !e.isBlank())
                 .collect(Collectors.toList());
+    }
+
+    private static String getAnnotationValueAsString(Object v) {
+        if (v instanceof AnnotationValue) {
+            final Object itemValue = ((AnnotationValue) v).getValue();
+            if (itemValue instanceof DeclaredType) {
+                final Element element = ((DeclaredType) itemValue).asElement();
+                return getElementClassName(element);
+            } else {
+                return itemValue.toString();
+            }
+        } else {
+            return v.toString();
+        }
+    }
+
+    static String getElementClassName(Element element) {
+        final List<String> parts = new ArrayList<>();
+
+        Element next = element;
+        while (next != null) {
+            parts.add(next.getSimpleName().toString());
+            next = next.getEnclosingElement();
+            if (next instanceof PackageElement) {
+                if (!((PackageElement) next).isUnnamed()) {
+                    parts.add(".");
+                    parts.add(next.toString());
+                }
+                break;
+            } else if (next instanceof ModuleElement) {
+                break;
+            } else {
+                parts.add("$");
+            }
+        }
+
+        Collections.reverse(parts);
+        return String.join("", parts);
     }
 
     static boolean writeConfigFile(HintFile file, String data, ProcessingEnvironment processingEnv) {

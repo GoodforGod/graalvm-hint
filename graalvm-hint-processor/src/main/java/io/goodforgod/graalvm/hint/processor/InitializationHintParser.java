@@ -97,7 +97,7 @@ final class InitializationHintParser implements OptionParser {
         final List<String> typeNames = Arrays.asList(hint.typeNames());
         final List<String> types = HintUtils.getAnnotationFieldClassNames(element, InitializationHint.class, "types");
         if (types.isEmpty() && typeNames.isEmpty()) {
-            final String selfName = element.getQualifiedName().toString();
+            final String selfName = HintUtils.getElementClassName(element);
             return List.of(new Initialization(selfName, phase));
         }
 
