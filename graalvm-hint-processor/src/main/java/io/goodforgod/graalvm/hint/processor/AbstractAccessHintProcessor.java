@@ -4,11 +4,8 @@ import io.goodforgod.graalvm.hint.annotation.JniHint;
 import io.goodforgod.graalvm.hint.annotation.ReflectionHint;
 import io.goodforgod.graalvm.hint.annotation.ReflectionHint.AccessType;
 import java.util.*;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import javax.annotation.processing.RoundEnvironment;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
 
@@ -70,33 +67,6 @@ abstract class AbstractAccessHintProcessor extends AbstractHintProcessor {
     protected Set<TypeElement> getAnnotatedTypeElements(RoundEnvironment roundEnv) {
         final Class[] classes = getSupportedAnnotations().toArray(Class[]::new);
         return HintUtils.getAnnotatedElements(roundEnv, classes);
-    }
-
-    protected Predicate<AnnotationValue> getParentAnnotationPredicate(ReflectionHint.AccessType[] accessTypes) {
-        return a -> {
-            final List<String> accessTypeNames = Arrays.stream(accessTypes)
-                    .map(Enum::name)
-                    .collect(Collectors.toList());
-
-            return ((AnnotationMirror) a).getElementValues().entrySet().stream()
-                    .filter(e -> e.getKey().getSimpleName().contentEquals("value"))
-                    .anyMatch(entry -> {
-                        final Object value = entry.getValue().getValue();
-                        final List<String> annotationAccessTypes = (value instanceof Collection)
-                                ? ((Collection<?>) value).stream()
-                                        .map(attr -> {
-                                            // Java 11 and Java 17 behave differently (different impls)
-                                            final String attrValue = attr.toString();
-                                            final int classStartIndex = attrValue.lastIndexOf('.');
-                                            return (classStartIndex == -1)
-                                                    ? attrValue
-                                                    : attrValue.substring(classStartIndex + 1);
-                                        }).collect(Collectors.toList())
-                                : List.of(value.toString());
-
-                        return annotationAccessTypes.equals(accessTypeNames);
-                    });
-        };
     }
 
     @Override
@@ -176,7 +146,7 @@ abstract class AbstractAccessHintProcessor extends AbstractHintProcessor {
         }
 
         Collections.reverse(classType);
-        return classType.stream().sequential().collect(Collectors.joining("$", packagePrefix + ".", ""));
+        return classType.stream().collect(Collectors.joining("$", packagePrefix + ".", ""));
     }
 
     private static List<String> getGraalAccessType(AccessType accessType) {

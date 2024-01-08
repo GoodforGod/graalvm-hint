@@ -86,4 +86,88 @@ class ReflectionHintProcessorTests extends ProcessorRunner {
                 .contentsAsString(StandardCharsets.UTF_8)
                 .isEqualTo(getResourceContentAsString("reflectionhint/generated/reflect-config-only-many-access.json"));
     }
+
+    @Test
+    void reflectionHintForInnerClass() {
+        final Compilation compilation = Compiler.javac()
+                .withProcessors(new ReflectionHintProcessor())
+                .compile(JavaFileObjects.forResource("reflectionhint/source/InnerClass.java"));
+
+        CompilationSubject.assertThat(compilation).succeeded();
+        CompilationSubject.assertThat(compilation)
+                .generatedFile(StandardLocation.CLASS_OUTPUT,
+                        "META-INF/native-image/io.goodforgod.graalvm.hint.processor/hint/reflect-config.json")
+                .contentsAsString(StandardCharsets.UTF_8)
+                .isEqualTo(getResourceContentAsString("reflectionhint/generated/reflect-config-inner-class.json"));
+    }
+
+    @Test
+    void reflectionHintForInnerClassSelf() {
+        final Compilation compilation = Compiler.javac()
+                .withProcessors(new ReflectionHintProcessor())
+                .compile(JavaFileObjects.forResource("reflectionhint/source/InnerSelf.java"));
+
+        CompilationSubject.assertThat(compilation).succeeded();
+        CompilationSubject.assertThat(compilation)
+                .generatedFile(StandardLocation.CLASS_OUTPUT,
+                        "META-INF/native-image/io.goodforgod.graalvm.hint.processor/hint/reflect-config.json")
+                .contentsAsString(StandardCharsets.UTF_8)
+                .isEqualTo(getResourceContentAsString("reflectionhint/generated/reflect-config-inner-self.json"));
+    }
+
+    @Test
+    void reflectionHintForInnerInnerClass() {
+        final Compilation compilation = Compiler.javac()
+                .withProcessors(new ReflectionHintProcessor())
+                .compile(JavaFileObjects.forResource("reflectionhint/source/InnerInnerClass.java"));
+
+        CompilationSubject.assertThat(compilation).succeeded();
+        CompilationSubject.assertThat(compilation)
+                .generatedFile(StandardLocation.CLASS_OUTPUT,
+                        "META-INF/native-image/io.goodforgod.graalvm.hint.processor/hint/reflect-config.json")
+                .contentsAsString(StandardCharsets.UTF_8)
+                .isEqualTo(getResourceContentAsString("reflectionhint/generated/reflect-config-inner-inner-class.json"));
+    }
+
+    @Test
+    void reflectionHintForInnerInnerClassSelf() {
+        final Compilation compilation = Compiler.javac()
+                .withProcessors(new ReflectionHintProcessor())
+                .compile(JavaFileObjects.forResource("reflectionhint/source/InnerInnerSelf.java"));
+
+        CompilationSubject.assertThat(compilation).succeeded();
+        CompilationSubject.assertThat(compilation)
+                .generatedFile(StandardLocation.CLASS_OUTPUT,
+                        "META-INF/native-image/io.goodforgod.graalvm.hint.processor/hint/reflect-config.json")
+                .contentsAsString(StandardCharsets.UTF_8)
+                .isEqualTo(getResourceContentAsString("reflectionhint/generated/reflect-config-inner-inner-self.json"));
+    }
+
+    @Test
+    void reflectionHintForInnerClassUnnamed() {
+        final Compilation compilation = Compiler.javac()
+                .withProcessors(new ReflectionHintProcessor())
+                .compile(JavaFileObjects.forResource("reflectionhint/source/InnerClassUnnamed.java"));
+
+        CompilationSubject.assertThat(compilation).succeeded();
+        CompilationSubject.assertThat(compilation)
+                .generatedFile(StandardLocation.CLASS_OUTPUT,
+                        "META-INF/native-image/io.graalvm.hint/hint/reflect-config.json")
+                .contentsAsString(StandardCharsets.UTF_8)
+                .isEqualTo(getResourceContentAsString("reflectionhint/generated/reflect-config-inner-class-unnamed.json"));
+    }
+
+    @Test
+    void reflectionHintForInnerClassSelfUnnamed() {
+        final Compilation compilation = Compiler.javac()
+                .withProcessors(new ReflectionHintProcessor())
+                .compile(JavaFileObjects.forResource("reflectionhint/source/InnerSelfUnnamed.java"));
+
+        CompilationSubject.assertThat(compilation).succeeded();
+        CompilationSubject.assertThat(compilation)
+                .generatedFile(StandardLocation.CLASS_OUTPUT,
+                        "META-INF/native-image/io.graalvm.hint/hint/reflect-config.json")
+                .contentsAsString(StandardCharsets.UTF_8)
+                .isEqualTo(getResourceContentAsString("reflectionhint/generated/reflect-config-inner-self-unnamed.json"));
+    }
 }
