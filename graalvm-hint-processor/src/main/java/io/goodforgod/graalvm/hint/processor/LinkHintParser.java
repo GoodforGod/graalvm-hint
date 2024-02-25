@@ -2,10 +2,7 @@ package io.goodforgod.graalvm.hint.processor;
 
 import io.goodforgod.graalvm.hint.annotation.LinkHint;
 import java.lang.annotation.Annotation;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -16,8 +13,8 @@ import javax.lang.model.element.TypeElement;
  * Processes {@link LinkHint} annotations for native-image.properties file
  *
  * @author Anton Kurako (GoodforGod)
- * @see LinkHint
  * @author Anton Kurako (GoodforGod)
+ * @see LinkHint
  * @since 02.05.2022
  */
 final class LinkHintParser implements OptionParser {
@@ -30,28 +27,41 @@ final class LinkHintParser implements OptionParser {
     }
 
     @Override
-    public List<String> getOptions(RoundEnvironment roundEnv, ProcessingEnvironment processingEnv) {
+    public List<Option> getOptions(RoundEnvironment roundEnv, ProcessingEnvironment processingEnv) {
         final Set<TypeElement> elements = HintUtils.getAnnotatedElements(roundEnv, LinkHint.class);
         if (elements.isEmpty()) {
             return Collections.emptyList();
         }
 
-        final boolean linkAll = elements.stream().anyMatch(e -> e.getAnnotation(LinkHint.class).all());
-        if (linkAll) {
-            return List.of(LINK_BUILD_TIME);
+        final Optional<TypeElement> linkAll = elements.stream()
+                .filter(e -> e.getAnnotation(LinkHint.class).all())
+                .findFirst();
+        if (linkAll.isPresent()) {
+            final HintOrigin hintOrigin = HintUtils.getHintOrigin(linkAll.get(), processingEnv);
+            return List.of(new Option(hintOrigin, List.of(LINK_BUILD_TIME)));
         }
 
-        final List<String> types = elements.stream()
-                .flatMap(e -> {
-                    final LinkHint hint = e.getAnnotation(LinkHint.class);
-                    return getTypes(e, hint);
-                })
-                .distinct()
-                .sorted()
-                .collect(Collectors.toList());
+        final Map<HintOrigin, List<String>> links = new HashMap<>();
+        for (TypeElement element : elements) {
+            final LinkHint hint = element.getAnnotation(LinkHint.class);
+            final List<String> hintTypes = getTypes(element, hint).collect(Collectors.toList());
 
-        return List.of(types.stream()
-                .collect(Collectors.joining(",", LINK_BUILD_TIME + "=", "")));
+            if (!hintTypes.isEmpty()) {
+                final HintOrigin origin = HintUtils.getHintOrigin(element, processingEnv);
+                final List<String> options = links.computeIfAbsent(origin, k -> new ArrayList<>());
+                options.addAll(hintTypes);
+            }
+        }
+
+        return links.entrySet().stream()
+                .map(e -> {
+                    final String linkOption = e.getValue().stream()
+                            .distinct()
+                            .collect(Collectors.joining(",", LINK_BUILD_TIME + "=", ""));
+
+                    return new Option(e.getKey(), List.of(linkOption));
+                })
+                .collect(Collectors.toList());
     }
 
     private Stream<String> getTypes(TypeElement element, LinkHint hint) {

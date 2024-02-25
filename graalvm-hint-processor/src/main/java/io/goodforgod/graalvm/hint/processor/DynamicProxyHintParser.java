@@ -16,7 +16,6 @@ import javax.lang.model.util.ElementFilter;
  *
  * @author Anton Kurako (GoodforGod)
  * @see DynamicProxyHint
- * @author Anton Kurako (GoodforGod)
  * @since 07.04.2022
  */
 final class DynamicProxyHintParser implements OptionParser {
@@ -34,59 +33,74 @@ final class DynamicProxyHintParser implements OptionParser {
         }
     }
 
+    private static final class DynamicProxy {
+
+        private final List<String> resources = new ArrayList<>();
+        private final List<String> files = new ArrayList<>();
+        private final List<Configuration> configurations = new ArrayList<>();
+    }
+
     @Override
     public List<Class<? extends Annotation>> getSupportedAnnotations() {
         return List.of(DynamicProxyHint.class);
     }
 
     @Override
-    public List<String> getOptions(RoundEnvironment roundEnv, ProcessingEnvironment processingEnv) {
+    public List<Option> getOptions(RoundEnvironment roundEnv, ProcessingEnvironment processingEnv) {
         final Set<? extends Element> annotated = roundEnv.getElementsAnnotatedWith(DynamicProxyHint.class);
         final Set<TypeElement> elements = ElementFilter.typesIn(annotated);
         if (elements.isEmpty()) {
             return Collections.emptyList();
         }
 
-        final List<String> resources = elements.stream()
-                .map(element -> element.getAnnotation(DynamicProxyHint.class))
-                .flatMap(hint -> Arrays.stream(hint.resources()))
-                .collect(Collectors.toList());
+        final Map<HintOrigin, DynamicProxy> proxies = new HashMap<>();
+        for (TypeElement element : elements) {
+            final List<String> resources = List.of(element.getAnnotation(DynamicProxyHint.class).resources());
+            final List<String> files = List.of(element.getAnnotation(DynamicProxyHint.class).files());
+            final List<Configuration> configurations = getDynamicProxyConfigurations(element).stream()
+                    .filter(c -> !c.getInterfaces().isEmpty())
+                    .collect(Collectors.toList());
 
-        final List<String> files = elements.stream()
-                .map(element -> element.getAnnotation(DynamicProxyHint.class))
-                .flatMap(hint -> Arrays.stream(hint.files()))
-                .collect(Collectors.toList());
-
-        final List<Configuration> configurations = elements.stream()
-                .map(this::getDynamicProxyConfigurations)
-                .flatMap(Collection::stream)
-                .filter(c -> !c.getInterfaces().isEmpty())
-                .collect(Collectors.toList());
-
-        if (!configurations.isEmpty()) {
-            final String proxyConfigurationFile = configurations.stream()
-                    .map(c -> c.getInterfaces().stream()
-                            .collect(Collectors.joining("\", \"", "  { \"interfaces\": [ \"", "\" ] }")))
-                    .collect(Collectors.joining(",\n", "[\n", "\n]"));
-
-            final HintOrigin origin = HintUtils.getHintOrigin(roundEnv, processingEnv);
-            final HintFile file = origin.getFileWithRelativePath("dynamic-proxy-config.json");
-            HintUtils.writeConfigFile(file, proxyConfigurationFile, processingEnv);
-            resources.add(file.getPath());
+            if (!configurations.isEmpty() || !files.isEmpty() || !resources.isEmpty()) {
+                final HintOrigin origin = HintUtils.getHintOrigin(element, processingEnv);
+                final DynamicProxy proxy = proxies.computeIfAbsent(origin, k -> new DynamicProxy());
+                proxy.files.addAll(files);
+                proxy.resources.addAll(resources);
+                proxy.configurations.addAll(configurations);
+            }
         }
 
-        final List<String> options = new ArrayList<>();
-        if (!files.isEmpty()) {
-            final String proxyFileOption = files.stream()
-                    .collect(Collectors.joining(",", "-H:DynamicProxyConfigurationFiles=", ""));
-            options.add(proxyFileOption);
-        }
+        proxies.forEach((o, p) -> {
+            if (!p.configurations.isEmpty()) {
+                final String proxyConfigurationFile = p.configurations.stream()
+                        .map(c -> c.getInterfaces().stream()
+                                .collect(Collectors.joining("\", \"", "  { \"interfaces\": [ \"", "\" ] }")))
+                        .collect(Collectors.joining(",\n", "[\n", "\n]"));
 
-        if (!resources.isEmpty()) {
-            final String proxyResourceOption = resources.stream()
-                    .collect(Collectors.joining(",", "-H:DynamicProxyConfigurationResources=", ""));
-            options.add(proxyResourceOption);
-        }
+                final HintOrigin origin = HintUtils.getHintOrigin(elements.iterator().next(), processingEnv);
+                final HintFile file = origin.getFileWithRelativePath("dynamic-proxy-config.json");
+                HintUtils.writeConfigFile(file, proxyConfigurationFile, processingEnv);
+                p.resources.add(file.getPath());
+            }
+        });
+
+        final List<Option> options = new ArrayList<>();
+        proxies.forEach((o, p) -> {
+            final List<String> originOptions = new ArrayList<>();
+            if (!p.files.isEmpty()) {
+                final String proxyFileOption = p.files.stream()
+                        .collect(Collectors.joining(",", "-H:DynamicProxyConfigurationFiles=", ""));
+                originOptions.add(proxyFileOption);
+            }
+
+            if (!p.resources.isEmpty()) {
+                final String proxyResourceOption = p.resources.stream()
+                        .collect(Collectors.joining(",", "-H:DynamicProxyConfigurationResources=", ""));
+                originOptions.add(proxyResourceOption);
+            }
+
+            options.add(new Option(o, originOptions));
+        });
 
         return options;
     }

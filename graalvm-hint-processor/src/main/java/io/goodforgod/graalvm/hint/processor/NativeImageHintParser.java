@@ -16,8 +16,8 @@ import javax.lang.model.util.ElementFilter;
  * Processes {@link NativeImageHint} annotations for native-image.properties file
  *
  * @author Anton Kurako (GoodforGod)
- * @see NativeImageHint
  * @author Anton Kurako (GoodforGod)
+ * @see NativeImageHint
  * @since 07.04.2022
  */
 final class NativeImageHintParser implements OptionParser {
@@ -28,10 +28,12 @@ final class NativeImageHintParser implements OptionParser {
 
         private final String className;
         private final TypeElement source;
+        private final HintOrigin origin;
 
-        private Entrypoint(String className, TypeElement source) {
+        private Entrypoint(String className, TypeElement source, HintOrigin origin) {
             this.className = className;
             this.source = source;
+            this.origin = origin;
         }
 
         NativeImageHint hint() {
@@ -50,7 +52,7 @@ final class NativeImageHintParser implements OptionParser {
     }
 
     @Override
-    public List<String> getOptions(RoundEnvironment roundEnv, ProcessingEnvironment processingEnv) {
+    public List<Option> getOptions(RoundEnvironment roundEnv, ProcessingEnvironment processingEnv) {
         final Set<? extends Element> annotatedNative = roundEnv.getElementsAnnotatedWith(NativeImageHint.class);
         final Set<TypeElement> elements = ElementFilter.typesIn(annotatedNative);
         if (elements.isEmpty()) {
@@ -60,32 +62,38 @@ final class NativeImageHintParser implements OptionParser {
         final List<Entrypoint> entrypoints = elements.stream()
                 .map(element -> HintUtils.getAnnotationFieldClassNameAny(element, NativeImageHint.class, "entrypoint")
                         .filter(name -> !ENTRY_POINT_DEFAULT_VALUE.equals(name))
-                        .map(name -> new Entrypoint(name, element))
+                        .map(name -> new Entrypoint(name, element, HintUtils.getHintOrigin(element, processingEnv)))
                         .orElse(null))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
         if (entrypoints.size() > 1) {
-            throw new HintException("@NativeImageHint multiple entrypoints detected: " + entrypoints, entrypoints.get(1).source);
+            throw new HintException("@NativeImageHint multiple entrypoint detected: " + entrypoints, entrypoints.get(1).source);
         }
 
-        final Optional<Entrypoint> entryClassName = entrypoints.stream().findFirst();
-        final List<String> options = elements.stream()
-                .map(element -> element.getAnnotation(NativeImageHint.class))
-                .flatMap(hint -> Stream
-                        .concat(Arrays.stream(hint.options()).map(NativeImageOptions::option), Arrays.stream(hint.optionNames()))
-                        .distinct())
-                .collect(Collectors.toList());
+        final Map<HintOrigin, List<String>> options = new HashMap<>();
+        entrypoints.stream().findFirst().ifPresent(entrypoint -> {
+            final List<String> entryOptions = getEntrypointOptions(entrypoint);
+            options.put(entrypoint.origin, new ArrayList<>(entryOptions));
+        });
 
-        return entryClassName
-                .map(entry -> {
-                    final List<String> entryOptions = getEntrypointOptions(entry);
-                    return Stream.of(entryOptions, options)
-                            .flatMap(Collection::stream)
-                            .distinct()
-                            .collect(Collectors.toList());
-                })
-                .orElse(options);
+        for (TypeElement element : elements) {
+            final NativeImageHint hint = element.getAnnotation(NativeImageHint.class);
+            final List<String> hintOptions = Stream
+                    .concat(Arrays.stream(hint.options()).map(NativeImageOptions::option), Arrays.stream(hint.optionNames()))
+                    .distinct()
+                    .collect(Collectors.toList());
+
+            if (!hintOptions.isEmpty()) {
+                final HintOrigin origin = HintUtils.getHintOrigin(element, processingEnv);
+                final List<String> resultOptions = options.computeIfAbsent(origin, k -> new ArrayList<>());
+                resultOptions.addAll(hintOptions);
+            }
+        }
+
+        return options.entrySet().stream()
+                .map(e -> new Option(e.getKey(), e.getValue()))
+                .collect(Collectors.toList());
     }
 
     private List<String> getEntrypointOptions(Entrypoint entrypoint) {

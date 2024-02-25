@@ -24,5 +24,5 @@ interface OptionParser {
      * @param processingEnv parser invoked in
      * @return list of {@link NativeImageHint#optionNames()} to include
      */
-    List<String> getOptions(RoundEnvironment roundEnv, ProcessingEnvironment processingEnv);
+    List<Option> getOptions(RoundEnvironment roundEnv, ProcessingEnvironment processingEnv);
 }

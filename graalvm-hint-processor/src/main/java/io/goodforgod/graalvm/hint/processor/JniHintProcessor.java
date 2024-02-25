@@ -34,7 +34,7 @@ public final class JniHintProcessor extends AbstractAccessHintProcessor {
     }
 
     @Override
-    protected Collection<Access> getGraalAccessForAnnotatedElement(TypeElement element) {
+    protected List<Access> getAccessForElement(TypeElement element) {
         final JniHints hints = element.getAnnotation(JniHints.class);
         if (hints == null) {
             final JniHint hint = element.getAnnotation(JniHint.class);
@@ -44,8 +44,8 @@ public final class JniHintProcessor extends AbstractAccessHintProcessor {
         }
     }
 
-    private static Collection<Access> getAnnotationAccesses(TypeElement element,
-                                                            JniHint hint) {
+    private static List<Access> getAnnotationAccesses(TypeElement element,
+                                                      JniHint hint) {
         final ReflectionHint.AccessType[] accessTypes = convert(hint.value());
         final List<String> typeNames = Arrays.asList(hint.typeNames());
         final List<String> types = HintUtils.getAnnotationFieldClassNames(element, JniHint.class, "types");

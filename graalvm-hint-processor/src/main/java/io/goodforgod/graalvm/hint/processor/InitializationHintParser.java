@@ -62,37 +62,49 @@ final class InitializationHintParser implements OptionParser {
     }
 
     @Override
-    public List<String> getOptions(RoundEnvironment roundEnv, ProcessingEnvironment processingEnv) {
-        final Set<TypeElement> elements = HintUtils.getAnnotatedElements(roundEnv, InitializationHint.class,
-                InitializationHints.class);
+    public List<Option> getOptions(RoundEnvironment roundEnv, ProcessingEnvironment processingEnv) {
+        final Set<TypeElement> elements = HintUtils.getAnnotatedElements(roundEnv,
+                InitializationHint.class, InitializationHints.class);
         if (elements.isEmpty()) {
             return Collections.emptyList();
         }
 
-        final Map<InitPhase, List<Initialization>> groupedInitializationOptions = elements.stream()
-                .flatMap(e -> {
-                    final InitializationHints hints = e.getAnnotation(InitializationHints.class);
-                    if (hints == null) {
-                        final InitializationHint hint = e.getAnnotation(InitializationHint.class);
-                        return getAnnotationPhases(e, hint).stream();
-                    } else {
-                        return getParentAnnotationPhases(e, InitializationHint.class, InitializationHints.class).stream();
-                    }
-                })
-                .distinct()
-                .collect(Collectors.groupingBy(e -> e.phase));
+        final Map<HintOrigin, List<Initialization>> inits = new HashMap<>();
+        for (TypeElement element : elements) {
+            final List<Initialization> initializations;
 
-        return groupedInitializationOptions.entrySet().stream()
-                .map(e -> e.getValue().stream()
-                        .sorted()
-                        .map(i -> i.className)
-                        .collect(Collectors.joining(",", getInitializationArgumentName(e.getKey()), "")))
-                .sorted()
+            final InitializationHints hints = element.getAnnotation(InitializationHints.class);
+            if (hints == null) {
+                final InitializationHint hint = element.getAnnotation(InitializationHint.class);
+                initializations = getAnnotationPhases(element, hint);
+            } else {
+                initializations = getParentAnnotationPhases(element, InitializationHint.class, InitializationHints.class);
+            }
+
+            final HintOrigin origin = HintUtils.getHintOrigin(element, processingEnv);
+            final List<Initialization> value = inits.computeIfAbsent(origin, k -> new ArrayList<>());
+            value.addAll(initializations);
+        }
+
+        return inits.entrySet().stream()
+                .map(e -> {
+                    final Map<InitPhase, List<Initialization>> grouped = e.getValue().stream()
+                            .collect(Collectors.groupingBy(i -> i.phase));
+                    final List<String> options = grouped.entrySet().stream()
+                            .map(entry -> entry.getValue().stream()
+                                    .sorted()
+                                    .map(i -> i.className)
+                                    .collect(Collectors.joining(",", getInitializationArgumentName(entry.getKey()), "")))
+                            .sorted()
+                            .collect(Collectors.toList());
+
+                    return new Option(e.getKey(), options);
+                })
                 .collect(Collectors.toList());
     }
 
-    private static Collection<Initialization> getAnnotationPhases(TypeElement element,
-                                                                  InitializationHint hint) {
+    private static List<Initialization> getAnnotationPhases(TypeElement element,
+                                                            InitializationHint hint) {
         final InitializationHint.InitPhase phase = hint.value();
         final List<String> typeNames = Arrays.asList(hint.typeNames());
         final List<String> types = HintUtils.getAnnotationFieldClassNames(element, InitializationHint.class, "types");

@@ -22,18 +22,15 @@ final class HintUtils {
 
     private HintUtils() {}
 
-    static HintOrigin getHintOrigin(RoundEnvironment roundEnv, ProcessingEnvironment processingEnv) {
+    static HintOrigin getHintOrigin(Element element, ProcessingEnvironment processingEnv) {
         final Map<String, String> options = processingEnv.getOptions();
-        final Set<? extends Element> rootElements = roundEnv.getRootElements();
-        final Element anyElement = rootElements.iterator().next();
-
         final String group = (options.containsKey(HintOrigin.HINT_PROCESSING_GROUP))
                 ? options.get(HintOrigin.HINT_PROCESSING_GROUP)
-                : getPackage(processingEnv, anyElement);
+                : getPackage(processingEnv, element);
 
         final String artifact = (options.containsKey(HintOrigin.HINT_PROCESSING_ARTIFACT))
                 ? options.get(HintOrigin.HINT_PROCESSING_ARTIFACT)
-                : getArtifact(anyElement);
+                : getArtifact(element);
 
         return new HintOrigin(group, artifact);
     }
@@ -165,6 +162,6 @@ final class HintUtils {
     }
 
     private static String getArtifact(Element element) {
-        return HintOrigin.DEFAULT_ARTIFACT;
+        return null;
     }
 }
