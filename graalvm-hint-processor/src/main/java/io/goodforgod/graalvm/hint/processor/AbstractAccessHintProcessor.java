@@ -62,7 +62,7 @@ abstract class AbstractAccessHintProcessor extends AbstractHintProcessor {
 
     protected abstract String getFileName();
 
-    protected abstract Collection<Access> getGraalAccessForAnnotatedElement(TypeElement element);
+    protected abstract List<Access> getAccessForElement(TypeElement element);
 
     protected Set<TypeElement> getAnnotatedTypeElements(RoundEnvironment roundEnv) {
         final Class[] classes = getSupportedAnnotations().toArray(Class[]::new);
@@ -77,16 +77,26 @@ abstract class AbstractAccessHintProcessor extends AbstractHintProcessor {
 
         try {
             final Set<TypeElement> types = getAnnotatedTypeElements(roundEnv);
-            final List<Access> accesses = types.stream()
-                    .flatMap(element -> getGraalAccessForAnnotatedElement(element).stream())
-                    .distinct()
-                    .sorted()
-                    .collect(Collectors.toList());
 
-            final String configJson = getAccessConfigJson(accesses);
-            final HintOrigin origin = HintUtils.getHintOrigin(roundEnv, processingEnv);
-            final HintFile file = origin.getFileWithRelativePath(getFileName());
-            return HintUtils.writeConfigFile(file, configJson, processingEnv);
+            final Map<HintOrigin, Set<Access>> accessHints = new HashMap<>();
+            for (TypeElement type : types) {
+                final List<Access> typeAccesses = getAccessForElement(type);
+                if (!typeAccesses.isEmpty()) {
+                    final HintOrigin origin = HintUtils.getHintOrigin(type, processingEnv);
+                    final Set<Access> accesses = accessHints.computeIfAbsent(origin, k -> new LinkedHashSet<>());
+                    accesses.addAll(typeAccesses);
+                }
+            }
+
+            for (var entry : accessHints.entrySet()) {
+                final String configJson = getAccessConfigJson(entry.getValue());
+                final HintFile file = entry.getKey().getFileWithRelativePath(getFileName());
+                if (!HintUtils.writeConfigFile(file, configJson, processingEnv)) {
+                    return false;
+                }
+            }
+
+            return true;
         } catch (Exception e) {
             processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING, e.getMessage());
             e.printStackTrace();

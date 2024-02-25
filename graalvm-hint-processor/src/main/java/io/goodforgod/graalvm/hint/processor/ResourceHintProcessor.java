@@ -23,9 +23,9 @@ public final class ResourceHintProcessor extends AbstractHintProcessor {
 
     private static class Resources {
 
-        private final Set<String> includes = new HashSet<>();
-        private final Set<String> excludes = new HashSet<>();
-        private final Set<String> bundles = new HashSet<>();
+        private final Set<String> includes = new LinkedHashSet<>();
+        private final Set<String> excludes = new LinkedHashSet<>();
+        private final Set<String> bundles = new LinkedHashSet<>();
 
         boolean haveIncludes() {
             return !includes.isEmpty();
@@ -55,11 +55,25 @@ public final class ResourceHintProcessor extends AbstractHintProcessor {
             final Set<? extends Element> annotated = roundEnv.getElementsAnnotatedWith(ResourceHint.class);
             final Set<TypeElement> elements = ElementFilter.typesIn(annotated);
 
-            final String resourceConfigJson = getResourceConfig(elements);
+            final Map<HintOrigin, Resources> resourcesMap = new HashMap<>();
+            for (TypeElement element : elements) {
+                final HintOrigin origin = HintUtils.getHintOrigin(element, processingEnv);
+                final Resources resources = resourcesMap.computeIfAbsent(origin, k -> new Resources());
+                final Resources resourceForElement = getResource(element);
+                resources.includes.addAll(resourceForElement.includes);
+                resources.excludes.addAll(resourceForElement.excludes);
+                resources.bundles.addAll(resourceForElement.bundles);
+            }
 
-            final HintOrigin origin = HintUtils.getHintOrigin(roundEnv, processingEnv);
-            final HintFile file = origin.getFileWithRelativePath(FILE_NAME);
-            return HintUtils.writeConfigFile(file, resourceConfigJson, processingEnv);
+            for (var entry : resourcesMap.entrySet()) {
+                final String resourceConfigJson = getResourceConfig(entry.getValue());
+                final HintFile file = entry.getKey().getFileWithRelativePath(FILE_NAME);
+                if (!HintUtils.writeConfigFile(file, resourceConfigJson, processingEnv)) {
+                    return false;
+                }
+            }
+
+            return true;
         } catch (HintException e) {
             processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, e.getMessage(), e.getElement());
             return false;
@@ -70,8 +84,7 @@ public final class ResourceHintProcessor extends AbstractHintProcessor {
         }
     }
 
-    private static String getResourceConfig(Set<TypeElement> elements) {
-        final Resources resources = getResources(elements);
+    private static String getResourceConfig(Resources resources) {
         final StringBuilder configBuilder = new StringBuilder();
         configBuilder.append("{");
         if (resources.haveIncludes() || resources.haveExcludes()) {
@@ -122,23 +135,21 @@ public final class ResourceHintProcessor extends AbstractHintProcessor {
                 .collect(Collectors.joining(",\n", "  \"bundles\": [\n", "\n  ]"));
     }
 
-    private static Resources getResources(Set<TypeElement> elements) {
+    private static Resources getResource(TypeElement element) {
         final Resources resources = new Resources();
-        for (TypeElement element : elements) {
-            final ResourceHint annotation = element.getAnnotation(ResourceHint.class);
-            final List<String> includeBatch = filterValues(annotation.include());
-            final List<String> excludeBatch = filterValues(annotation.exclude());
-            final List<String> bundleBatch = filterValues(annotation.bundles());
-            if (includeBatch.isEmpty() && excludeBatch.isEmpty() && bundleBatch.isEmpty()) {
-                throw new HintException(element.getQualifiedName().toString() + " is annotated with @"
-                        + ResourceHint.class.getSimpleName()
-                        + ", but no valid 'include' or 'exclude' or 'bundle' parameters specified!", element);
-            }
-
-            resources.includes.addAll(includeBatch);
-            resources.excludes.addAll(excludeBatch);
-            resources.bundles.addAll(bundleBatch);
+        final ResourceHint annotation = element.getAnnotation(ResourceHint.class);
+        final List<String> includeBatch = filterValues(annotation.include());
+        final List<String> excludeBatch = filterValues(annotation.exclude());
+        final List<String> bundleBatch = filterValues(annotation.bundles());
+        if (includeBatch.isEmpty() && excludeBatch.isEmpty() && bundleBatch.isEmpty()) {
+            throw new HintException(element.getQualifiedName().toString() + " is annotated with @"
+                    + ResourceHint.class.getSimpleName()
+                    + ", but no valid 'include' or 'exclude' or 'bundle' parameters specified!", element);
         }
+
+        resources.includes.addAll(includeBatch);
+        resources.excludes.addAll(excludeBatch);
+        resources.bundles.addAll(bundleBatch);
 
         return resources;
     }

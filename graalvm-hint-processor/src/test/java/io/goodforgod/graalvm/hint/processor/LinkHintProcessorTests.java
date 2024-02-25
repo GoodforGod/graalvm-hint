@@ -23,7 +23,7 @@ class LinkHintProcessorTests extends ProcessorRunner {
         CompilationSubject.assertThat(compilation).succeeded();
         CompilationSubject.assertThat(compilation)
                 .generatedFile(StandardLocation.CLASS_OUTPUT,
-                        "META-INF/native-image/io.goodforgod.graalvm.hint.processor/hint/native-image.properties")
+                        "META-INF/native-image/io.goodforgod.graalvm.hint.processor/native-image.properties")
                 .contentsAsString(StandardCharsets.UTF_8)
                 .isEqualTo(getResourceContentAsString("linkhint/generated/native-image-self.properties"));
     }
@@ -37,7 +37,7 @@ class LinkHintProcessorTests extends ProcessorRunner {
         CompilationSubject.assertThat(compilation).succeeded();
         CompilationSubject.assertThat(compilation)
                 .generatedFile(StandardLocation.CLASS_OUTPUT,
-                        "META-INF/native-image/io.goodforgod.graalvm.hint.processor/hint/native-image.properties")
+                        "META-INF/native-image/io.goodforgod.graalvm.hint.processor/native-image.properties")
                 .contentsAsString(StandardCharsets.UTF_8)
                 .isEqualTo(getResourceContentAsString("linkhint/generated/native-image-type-typename.properties"));
     }
@@ -51,7 +51,7 @@ class LinkHintProcessorTests extends ProcessorRunner {
         CompilationSubject.assertThat(compilation).succeeded();
         CompilationSubject.assertThat(compilation)
                 .generatedFile(StandardLocation.CLASS_OUTPUT,
-                        "META-INF/native-image/io.goodforgod.graalvm.hint.processor/hint/native-image.properties")
+                        "META-INF/native-image/io.goodforgod.graalvm.hint.processor/native-image.properties")
                 .contentsAsString(StandardCharsets.UTF_8)
                 .isEqualTo(getResourceContentAsString("linkhint/generated/native-image-type.properties"));
     }
@@ -65,7 +65,7 @@ class LinkHintProcessorTests extends ProcessorRunner {
         CompilationSubject.assertThat(compilation).succeeded();
         CompilationSubject.assertThat(compilation)
                 .generatedFile(StandardLocation.CLASS_OUTPUT,
-                        "META-INF/native-image/io.goodforgod.graalvm.hint.processor/hint/native-image.properties")
+                        "META-INF/native-image/io.goodforgod.graalvm.hint.processor/native-image.properties")
                 .contentsAsString(StandardCharsets.UTF_8)
                 .isEqualTo(getResourceContentAsString(
                         "linkhint/generated/native-image-entrypoint-link.properties"));

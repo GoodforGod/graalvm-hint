@@ -23,13 +23,13 @@ class DynamicProxyHintProcessorTests extends ProcessorRunner {
         CompilationSubject.assertThat(compilation).succeeded();
         CompilationSubject.assertThat(compilation)
                 .generatedFile(StandardLocation.CLASS_OUTPUT,
-                        "META-INF/native-image/io.goodforgod.graalvm.hint.processor/hint/native-image.properties")
+                        "META-INF/native-image/io.goodforgod.graalvm.hint.processor/native-image.properties")
                 .contentsAsString(StandardCharsets.UTF_8)
                 .isEqualTo(getResourceContentAsString("dynamicproxyhint/generated/native-image-config.properties"));
 
         CompilationSubject.assertThat(compilation)
                 .generatedFile(StandardLocation.CLASS_OUTPUT,
-                        "META-INF/native-image/io.goodforgod.graalvm.hint.processor/hint/dynamic-proxy-config.json")
+                        "META-INF/native-image/io.goodforgod.graalvm.hint.processor/dynamic-proxy-config.json")
                 .contentsAsString(StandardCharsets.UTF_8)
                 .isEqualTo(getResourceContentAsString("dynamicproxyhint/generated/dynamic-proxy-hint-self.json"));
     }
@@ -52,13 +52,13 @@ class DynamicProxyHintProcessorTests extends ProcessorRunner {
         CompilationSubject.assertThat(compilation).succeeded();
         CompilationSubject.assertThat(compilation)
                 .generatedFile(StandardLocation.CLASS_OUTPUT,
-                        "META-INF/native-image/io.goodforgod.graalvm.hint.processor/hint/native-image.properties")
+                        "META-INF/native-image/io.goodforgod.graalvm.hint.processor/native-image.properties")
                 .contentsAsString(StandardCharsets.UTF_8)
                 .isEqualTo(getResourceContentAsString("dynamicproxyhint/generated/native-image-config.properties"));
 
         CompilationSubject.assertThat(compilation)
                 .generatedFile(StandardLocation.CLASS_OUTPUT,
-                        "META-INF/native-image/io.goodforgod.graalvm.hint.processor/hint/dynamic-proxy-config.json")
+                        "META-INF/native-image/io.goodforgod.graalvm.hint.processor/dynamic-proxy-config.json")
                 .contentsAsString(StandardCharsets.UTF_8)
                 .isEqualTo(getResourceContentAsString("dynamicproxyhint/generated/dynamic-proxy-hint-config.json"));
     }
@@ -72,7 +72,7 @@ class DynamicProxyHintProcessorTests extends ProcessorRunner {
         CompilationSubject.assertThat(compilation).succeeded();
         CompilationSubject.assertThat(compilation)
                 .generatedFile(StandardLocation.CLASS_OUTPUT,
-                        "META-INF/native-image/io.goodforgod.graalvm.hint.processor/hint/native-image.properties")
+                        "META-INF/native-image/io.goodforgod.graalvm.hint.processor/native-image.properties")
                 .contentsAsString(StandardCharsets.UTF_8)
                 .isEqualTo(getResourceContentAsString("dynamicproxyhint/generated/native-image-resource.properties"));
     }
@@ -86,13 +86,13 @@ class DynamicProxyHintProcessorTests extends ProcessorRunner {
         CompilationSubject.assertThat(compilation).succeeded();
         CompilationSubject.assertThat(compilation)
                 .generatedFile(StandardLocation.CLASS_OUTPUT,
-                        "META-INF/native-image/io.goodforgod.graalvm.hint.processor/hint/native-image.properties")
+                        "META-INF/native-image/io.goodforgod.graalvm.hint.processor/native-image.properties")
                 .contentsAsString(StandardCharsets.UTF_8)
                 .isEqualTo(getResourceContentAsString("dynamicproxyhint/generated/native-image-resource-and-config.properties"));
 
         CompilationSubject.assertThat(compilation)
                 .generatedFile(StandardLocation.CLASS_OUTPUT,
-                        "META-INF/native-image/io.goodforgod.graalvm.hint.processor/hint/dynamic-proxy-config.json")
+                        "META-INF/native-image/io.goodforgod.graalvm.hint.processor/dynamic-proxy-config.json")
                 .contentsAsString(StandardCharsets.UTF_8)
                 .isEqualTo(getResourceContentAsString("dynamicproxyhint/generated/dynamic-proxy-hint-resource-and-config.json"));
     }
@@ -107,13 +107,13 @@ class DynamicProxyHintProcessorTests extends ProcessorRunner {
         CompilationSubject.assertThat(compilation).succeeded();
         CompilationSubject.assertThat(compilation)
                 .generatedFile(StandardLocation.CLASS_OUTPUT,
-                        "META-INF/native-image/io.goodforgod.graalvm.hint.processor/hint/native-image.properties")
+                        "META-INF/native-image/io.goodforgod.graalvm.hint.processor/native-image.properties")
                 .contentsAsString(StandardCharsets.UTF_8)
                 .isEqualTo(getResourceContentAsString("dynamicproxyhint/generated/native-image-resource-and-config.properties"));
 
         CompilationSubject.assertThat(compilation)
                 .generatedFile(StandardLocation.CLASS_OUTPUT,
-                        "META-INF/native-image/io.goodforgod.graalvm.hint.processor/hint/dynamic-proxy-config.json")
+                        "META-INF/native-image/io.goodforgod.graalvm.hint.processor/dynamic-proxy-config.json")
                 .contentsAsString(StandardCharsets.UTF_8)
                 .isEqualTo(getResourceContentAsString("dynamicproxyhint/generated/dynamic-proxy-hint-resource-and-config.json"));
     }

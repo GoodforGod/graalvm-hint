@@ -5,7 +5,6 @@ import io.goodforgod.graalvm.hint.annotation.ReflectionHint.AccessType;
 import io.goodforgod.graalvm.hint.annotation.ReflectionHints;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -33,7 +32,7 @@ public final class ReflectionHintProcessor extends AbstractAccessHintProcessor {
     }
 
     @Override
-    protected Collection<Access> getGraalAccessForAnnotatedElement(TypeElement element) {
+    protected List<Access> getAccessForElement(TypeElement element) {
         final ReflectionHints hints = element.getAnnotation(ReflectionHints.class);
         if (hints == null) {
             final ReflectionHint hint = element.getAnnotation(ReflectionHint.class);
@@ -43,8 +42,8 @@ public final class ReflectionHintProcessor extends AbstractAccessHintProcessor {
         }
     }
 
-    private static Collection<Access> getAnnotationAccesses(TypeElement element,
-                                                            ReflectionHint hint) {
+    private static List<Access> getAnnotationAccesses(TypeElement element,
+                                                      ReflectionHint hint) {
         final AccessType[] accessTypes = hint.value();
         final List<String> typeNames = Arrays.asList(hint.typeNames());
         final List<String> types = HintUtils.getAnnotationFieldClassNames(element, ReflectionHint.class, "types");

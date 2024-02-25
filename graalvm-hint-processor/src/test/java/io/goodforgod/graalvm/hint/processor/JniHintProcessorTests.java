@@ -23,7 +23,7 @@ class JniHintProcessorTests extends ProcessorRunner {
         CompilationSubject.assertThat(compilation).succeeded();
         CompilationSubject.assertThat(compilation)
                 .generatedFile(StandardLocation.CLASS_OUTPUT,
-                        "META-INF/native-image/io.goodforgod.graalvm.hint.processor/hint/jni-config.json")
+                        "META-INF/native-image/io.goodforgod.graalvm.hint.processor/jni-config.json")
                 .contentsAsString(StandardCharsets.UTF_8)
                 .isEqualTo(getResourceContentAsString("jnihint/generated/jni-config-only.json"));
     }
@@ -37,7 +37,7 @@ class JniHintProcessorTests extends ProcessorRunner {
         CompilationSubject.assertThat(compilation).succeeded();
         CompilationSubject.assertThat(compilation)
                 .generatedFile(StandardLocation.CLASS_OUTPUT,
-                        "META-INF/native-image/io.goodforgod.graalvm.hint.processor/hint/jni-config.json")
+                        "META-INF/native-image/io.goodforgod.graalvm.hint.processor/jni-config.json")
                 .contentsAsString(StandardCharsets.UTF_8)
                 .isEqualTo(getResourceContentAsString("jnihint/generated/jni-config.json"));
     }
@@ -52,7 +52,7 @@ class JniHintProcessorTests extends ProcessorRunner {
         CompilationSubject.assertThat(compilation).succeeded();
         CompilationSubject.assertThat(compilation)
                 .generatedFile(StandardLocation.CLASS_OUTPUT,
-                        "META-INF/native-image/io.goodforgod.graalvm.hint.processor/hint/jni-config.json")
+                        "META-INF/native-image/io.goodforgod.graalvm.hint.processor/jni-config.json")
                 .contentsAsString(StandardCharsets.UTF_8)
                 .isEqualTo(getResourceContentAsString("jnihint/generated/jni-config-many.json"));
     }
@@ -66,7 +66,7 @@ class JniHintProcessorTests extends ProcessorRunner {
         CompilationSubject.assertThat(compilation).succeeded();
         CompilationSubject.assertThat(compilation)
                 .generatedFile(StandardLocation.CLASS_OUTPUT,
-                        "META-INF/native-image/io.goodforgod.graalvm.hint.processor/hint/jni-config.json")
+                        "META-INF/native-image/io.goodforgod.graalvm.hint.processor/jni-config.json")
                 .contentsAsString(StandardCharsets.UTF_8)
                 .isEqualTo(getResourceContentAsString("jnihint/generated/jni-config-only-many-access.json"));
     }

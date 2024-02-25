@@ -47,9 +47,20 @@ public final class NativeImageHintProcessor extends AbstractHintProcessor {
         }
 
         try {
-            final List<String> options = OPTION_PARSERS.stream()
+            final List<Option> options = OPTION_PARSERS.stream()
                     .flatMap(parser -> parser.getOptions(roundEnv, processingEnv).stream())
+                    .collect(Collectors.groupingBy(Option::getOrigin))
+                    .entrySet().stream()
+                    .map(e -> {
+                        final List<String> mergedOptions = e.getValue().stream()
+                                .flatMap(v -> v.getOptions().stream())
+                                .distinct()
+                                .collect(Collectors.toList());
+                        return new Option(e.getKey(), mergedOptions);
+                    })
                     .collect(Collectors.toList());
+
+            System.out.println("Options - " + options);
 
             if (options.isEmpty()) {
                 final String annotations = OPTION_PARSERS.stream()
@@ -62,12 +73,17 @@ public final class NativeImageHintProcessor extends AbstractHintProcessor {
                         annotations + " are present but no options retrieved");
                 return false;
             } else {
-                final String nativeImageProperties = options.stream()
-                        .collect(Collectors.joining(ARG_SEPARATOR, "Args = ", ""));
+                for (Option option : options) {
+                    final String nativeImageProperties = option.getOptions().stream()
+                            .collect(Collectors.joining(ARG_SEPARATOR, "Args = ", ""));
 
-                final HintOrigin origin = HintUtils.getHintOrigin(roundEnv, processingEnv);
-                final HintFile file = origin.getFileWithRelativePath(FILE_NAME);
-                return HintUtils.writeConfigFile(file, nativeImageProperties, processingEnv);
+                    final HintFile file = option.getOrigin().getFileWithRelativePath(FILE_NAME);
+                    if (!HintUtils.writeConfigFile(file, nativeImageProperties, processingEnv)) {
+                        return false;
+                    }
+                }
+
+                return true;
             }
         } catch (HintException e) {
             processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, e.getMessage(), e.getElement());
