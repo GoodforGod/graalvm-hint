@@ -60,8 +60,6 @@ public final class NativeImageHintProcessor extends AbstractHintProcessor {
                     })
                     .collect(Collectors.toList());
 
-            System.out.println("Options - " + options);
-
             if (options.isEmpty()) {
                 final String annotations = OPTION_PARSERS.stream()
                         .flatMap(parser -> parser.getSupportedAnnotations().stream()

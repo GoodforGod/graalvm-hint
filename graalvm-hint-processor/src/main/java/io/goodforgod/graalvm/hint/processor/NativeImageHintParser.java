@@ -86,7 +86,7 @@ final class NativeImageHintParser implements OptionParser {
 
             if (!hintOptions.isEmpty()) {
                 final HintOrigin origin = HintUtils.getHintOrigin(element, processingEnv);
-                final List<String> resultOptions = options.computeIfAbsent(origin, (k) -> new ArrayList<>());
+                final List<String> resultOptions = options.computeIfAbsent(origin, k -> new ArrayList<>());
                 resultOptions.addAll(hintOptions);
             }
         }
